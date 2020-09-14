@@ -1,0 +1,11 @@
+@extends("layouts.imports")
+@section("cabecera")
+@include("user.layouts.navbar")
+@endsection
+@section("contenido")
+    <div>
+        HISTORIAL
+    </div>
+@endsection
+@section("pie")
+@endsection
