@@ -140,9 +140,9 @@ class UserController extends Controller
         //si existe una descarga anterior para ese recurso y fue 
         //del mismo tipo, entonces se descarga, si no, se scrappea y elimina la descarga anterior.
         $finalName = public_path() . "/users/" . Auth::user()->id . "/" . $request->input("resourceName") . ".zip";
-        $lastDownload = Auth::user()->mangas()->withPivot("download", "created_at")->where("name", $request->input("resourceName"))->whereNotNull("download")->orderBy("manga_user.created_at", "DESC")->first()->pivot->download;
+        $lastDownload = Auth::user()->mangas()->withPivot("download", "created_at")->where("mangas.name", $request->input("resourceName"))->whereNotNull("download")->orderBy("manga_user.created_at", "DESC")->first();
         $resource->users()->attach(Auth::user(), ["download" => json_encode($selection)]);
-        if (file_exists($finalName) && $lastDownload === json_encode($selection)) {
+        if (file_exists($finalName) && !is_null($lastDownload) && $lastDownload->pivot->download === json_encode($selection)) {
             return response()->download($finalName);
         }
         File::deleteDirectory(public_path() . "/users/" . Auth::user()->id);
