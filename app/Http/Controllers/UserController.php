@@ -66,8 +66,27 @@ class UserController extends Controller
         $isManga = $request->has("typeSelected");
         Session::put("isManga", $isManga);
         $resources =  $isManga ? Manga::where('name', $seriesName)
-            ->orWhere('name', 'like', '%' . $seriesName . '%')->skip(($page - 1) * 28)->take(28)->get() : "novel";
+            ->orWhere('name', 'like', '%' . $seriesName . '%')->orderBy("mangas.name", "ASC")->skip(($page - 1) * 28)->take(28)->get() : "novel";
         return view("user.search", compact("resources", "seriesName", "pageNumbersTotal", "page"));
+    }
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param string $nombre
+     * @return \Illuminate\Http\Response
+     */
+    public function history($nombre, Request $request)
+    {
+        $page = $request->input("page");
+        $totalSearchResults = Auth::user()->mangas()->withPivot("download", "created_at")->whereNotNull("manga_user.created_at")->count();
+        $totalPages = ceil($totalSearchResults / 30);
+        $page = is_null($request->input("page")) ? 1 : $request->input("page");
+        $historyPageResults = Auth::user()->mangas()->withPivot("download", "created_at")->whereNotNull("manga_user.created_at")->orderBy("manga_user.created_at", "DESC")->skip(($page - 1) * 30)->take(30)->get();
+        foreach ($historyPageResults as $result) {
+            $result->pivot->download = json_decode($result->pivot->download, true);
+        }
+        return view("user.history", compact("historyPageResults", "totalPages", "page"));
     }
 
     /**
@@ -155,16 +174,5 @@ class UserController extends Controller
         $scrapper->downloadVersions($selection, Auth::user(), $request->input("resourceName"));
         File::deleteDirectory(public_path() . "/users/" . Auth::user()->id . "/" . $request->input("resourceName"));
         return response()->download($finalName);
-    }
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param string $nombre
-     * @return \Illuminate\Http\Response
-     */
-    public function history($nombre, Request $request)
-    {
-        return view("user.history");
     }
 }
