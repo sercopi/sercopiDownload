@@ -31,8 +31,6 @@
             </li>
           </ul>
           <form method="GET" action="{{URL::to('user/'.Auth::user()->name.'/search')}}" class="form-inline ">
-            {{csrf_field()}}
-
             <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search"
               name="seriesName">
             <div class="custom-control custom-switch">

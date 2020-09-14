@@ -58,12 +58,16 @@ class UserController extends Controller
      */
     public function search($nombre, Request $request)
     {
+        $seriesName = str_replace(" ", "-", $request->input("seriesName"));
+        $totalSearchResults = Manga::where('name', $seriesName)
+            ->orWhere('name', 'like', '%' . $seriesName . '%')->count();
+        $pageNumbersTotal = ceil($totalSearchResults / 28);
+        $page = is_null($request->input("page")) ? 1 : $request->input("page");
         $isManga = $request->has("typeSelected");
         Session::put("isManga", $isManga);
-        $seriesName = str_replace(" ", "-", $request->input("seriesName"));
         $resources =  $isManga ? Manga::where('name', $seriesName)
-            ->orWhere('name', 'like', '%' . $seriesName . '%')->get() : "novel";
-        return view("user.search", compact("resources"));
+            ->orWhere('name', 'like', '%' . $seriesName . '%')->skip(($page - 1) * 28)->take(28)->get() : "novel";
+        return view("user.search", compact("resources", "seriesName", "pageNumbersTotal", "page"));
     }
 
     /**

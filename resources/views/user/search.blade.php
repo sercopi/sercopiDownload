@@ -8,7 +8,7 @@
     <div class="row">
         @foreach($resources as $resource)
         <div class="col-3 card-group">
-            <div class="card card-block" style="width: 18rem;">
+            <div class="card card-block mt-2 mb-2" style="width: 18rem;">
                 <img class="card-img-top" src={{"data:image/png;base64,".$resource->imageInfo}} alt="Card image cap"
                     height="400px;" width="75px;">
                 <div class="card-body">
@@ -33,4 +33,6 @@
         </div>
     </div>
     @endif
-    @endsection
+</div>
+@include("user.layouts.manga.pagination",["seriesName"=>$seriesName,"pages"=>$pageNumbersTotal,"currentPage"=>$page])
+@endsection
