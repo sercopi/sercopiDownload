@@ -20,11 +20,7 @@ Route::get('/', function () {
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
-Route::resource("admin/users", "AdminUsersController");
-//se accede desde el usuario
-//Route::get("/mangapark/{mangaName}/info", "MangaparkScrapperController@info");
-//Route::resource("user/{nombre}", "UserController");
-//voy a hacerlo desde el formulario
+Route::resource("/admin/users", "AdminUsersController");
 Route::get("/user/{nombre}/search", "UserController@search");
 Route::post("/user/{nombre}/download", "UserController@download");
 Route::get("/user/{nombre}", "UserController@index");
