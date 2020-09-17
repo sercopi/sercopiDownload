@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -26,7 +28,26 @@ class UserController extends Controller
     public function index()
     {
         Session::put("isManga", true);
-        return view("user/index");
+        $queryMostPopular = DB::select(DB::raw("select mangas.id,mangas.name,count(mangas.name) as searches from mangas inner join manga_user on mangas.id=manga_user.manga_id inner join users on users.id=manga_user.user_id where datediff(manga_user.created_at,CURRENT_TIMESTAMP())<4 group by mangas.name order by searches DESC limit 20"));
+        $twentyMostPopular = Collection::make();
+        foreach ($queryMostPopular as $manga) {
+            $twentyMostPopular->push(Manga::where("name", $manga->name)->first());
+        }
+        //si no hay suficientes resultados 
+        //(la aplicacion acaba de empezar o no tiene busquedas en los ultimso 4 dias),
+        // se llena el array hasta 20, que deberian ser randoms, pero obtener 20 randoms tarda
+        //demasiado debido al volumend e registros, asi que los lleno con los 20 primeros.
+        if (count($twentyMostPopular) < 20) {
+            $randoms = Manga::limit(20 - count($twentyMostPopular))->get();
+            $twentyMostPopular = $twentyMostPopular->merge($randoms);
+        }
+        $twentyBestRated = Manga::orderBy("score", "DESC")->limit(20)->get();
+        if (count($twentyBestRated) < 20) {
+            $randoms = Manga::limit(20 - count($twentyBestRated))->get();
+            $twentyBestRated = $twentyBestRated->merge($randoms);
+        }
+        $twentyLastAdded = Manga::orderBy("created_at", "DESC")->limit(20)->get();
+        return view("user.index", compact("twentyMostPopular", "twentyBestRated", "twentyLastAdded"));
     }
     /**
      * Store a newly created resource in storage.
