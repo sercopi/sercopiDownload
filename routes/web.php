@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route("home");
 });
 
 Auth::routes();
@@ -23,7 +23,7 @@ Route::get('/home', 'HomeController@index')->name('home');
 Route::resource("/admin/users", "AdminUsersController");
 Route::get("/user/{nombre}/search", "UserController@search");
 Route::post("/user/{nombre}/download", "UserController@download");
-Route::get("/user/{nombre}", "UserController@index");
+Route::get("/user/{nombre}", "UserController@index")->name("userIndex");
 Route::resource("/user/{nombre}/comment", "UserCommentsController");
 Route::get("/user/{nombre}/manga/{mangaName}", "UserController@showManga");
 Route::get("/user/{nombre}/history", "UserController@history");
