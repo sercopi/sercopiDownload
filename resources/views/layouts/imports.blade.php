@@ -99,6 +99,11 @@
             font-size: 2.2rem;
         }
     </style>
+    <style>
+        .resource-search-button {
+            width: 100px;
+        }
+    </style>
 </head>
 
 <body>

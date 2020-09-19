@@ -29,7 +29,10 @@
               <a class="nav-link" href={{URL::to("/user/".Auth::user()->name.'/history')}}>History</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href={{URL::to("/")}}><span class="icon"><i class="fas fa-home"></i></span></a>
+              <a class="nav-link" href={{URL::to("/")}}><span><i class="fas fa-home"></i></span></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href={{URL::to("/user/".Auth::user()->name."/advancedSearch")}}>Advanced Search</a>
             </li>
 
             <li class="nav-item">
@@ -39,20 +42,8 @@
           <form method="GET" action="{{URL::to('user/'.Auth::user()->name.'/search')}}" class="form-inline ">
             <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search"
               name="seriesName">
-            <div class="custom-control custom-switch">
-              @if(Session::get("isManga"))
-              <input type="checkbox" name="typeSelected" class="custom-control-input" id="type" checked>
-              @else
-              <input type="checkbox" name="typeSelected" class="custom-control-input" id="type">
-              @endif
-              <label class="custom-control-label" id="labelForType"
-                for="type">{{Session::get("isManga")?"Manga":"Novel"}}</label>
-              <script>
-                $('#type').click((event) => event.target.checked?$('#labelForType').text("Manga"):$('#labelForType').text("Novel"));
-                      console.log("se ejecutan el segundo");
-              </script>
-            </div>
-            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit"><i class="fas fa-search"></i>
+              Search</button>
           </form>
         </div>
       </nav>

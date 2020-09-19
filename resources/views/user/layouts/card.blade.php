@@ -10,7 +10,8 @@
             <button class="btn btn-primary" type="button" data-toggle="collapse"
                 data-target={{"#sinopsis-".$resource->name}} aria-expanded="false"
                 aria-controls={{"sinopsis-".$resource->name}}>Show Synopsis</button>
-            <a href={{URL::to("/user/".Auth::user()->name."/manga/".$resource->name)}} class="btn btn-primary">Ir</a>
+            <a href={{URL::to("/user/".Auth::user()->name."/".$resourceType."/".$resource->name)}}
+                class="btn btn-primary">Ir</a>
         </div>
     </div>
 </div>

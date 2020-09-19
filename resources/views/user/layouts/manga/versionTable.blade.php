@@ -1,7 +1,7 @@
 <table class="table table-striped table-bordered table-sm versionTable" cellspacing="0" width="100%">
     <thead>
         <tr>
-            <th class="th-sm">{{$versionName}}</th>
+            <th class="th-sm"><input type="checkbox" value="1" class="select-all"></th>
             <th class="th-sm">Chapters</th>
         </tr>
     </thead>

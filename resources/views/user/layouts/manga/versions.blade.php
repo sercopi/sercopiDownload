@@ -1,6 +1,6 @@
-<form method="POST" action="{{URL::to('user/'.Auth::user()->name.'/download')}}" class="form my-2 my-lg-0 container">
+<form method="POST" action="{{URL::to('user/'.Auth::user()->name.'/download/manga/'.$resourceName)}}"
+  class="form my-2 my-lg-0 container" id="form-versions">
   {{csrf_field()}}
-  <input type="hidden" name="resourceName" value={{$resourceName}}>
   @foreach($versions as $versionName=>$version)
   <div class="row justify-content-center mt-3 mb-3">
     <div class="col">
