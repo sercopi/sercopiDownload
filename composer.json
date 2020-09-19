@@ -16,6 +16,7 @@
         "laravel/tinker": "^2.0",
         "laravel/ui": "^2.2",
         "laravelcollective/html": "^6.1",
+        "mpdf/mpdf": "^8.0",
         "predis/predis": "^1.1"
     },
     "require-dev": {
