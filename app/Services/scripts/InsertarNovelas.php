@@ -20,14 +20,15 @@ class InsertarNovelas extends Comunicacion
         $stmtInsertarPagina = $this->oConn->prepare($sqlInsertarPagina);
         try {
             $stmtInsertarPagina->execute($dataToInsert);
-            return $stmtInsertarPagina->lastInsertId();
+            return $id = $this->oConn->lastInsertId();
         } catch (PDOException $e) {
             echo $e->getMessage();
+            return false;
         }
     }
     public function insertChapters($chapters, $id)
     {
-        $sqlInsertarChapter = "INSERTO INTO `novel_chapters` (`number`,`title`,`content`,`novel_id`) VALUES ";
+        $sqlInsertarChapter = "INSERT INTO `novel_chapters` (`number`,`title`,`content`,`novel_id`) VALUES ";
         $dataToInsert = [];
         foreach ($chapters as $number => $chapter) {
             $sqlInsertarChapter .= "(?,?,?,?),";
@@ -40,16 +41,19 @@ class InsertarNovelas extends Comunicacion
         $stmtInsertarChapter = $this->oConn->prepare($sqlInsertarChapter);
         try {
             $stmtInsertarChapter->execute($dataToInsert);
+            echo "capitulos insertados." . PHP_EOL;
         } catch (PDOException $e) {
             echo $e->getMessage();
         }
     }
-    public function select()
+    public function getId($name)
     {
-        $status = $this->oConn->getAttribute(PDO::ATTR_CONNECTION_STATUS);
-        var_dump($status);
-        $this->stmtSelect->execute();
-        $results = $this->stmtSelect->fetch();
-        var_dump($results);
+        $stmtGetId = $this->oConn->prepare("SELECT id FROM novels where name=?");
+        try {
+            $stmtGetId->execute([$name]);
+            return $stmtGetId->fetchAll()[0]["id"];
+        } catch (PDOException $error) {
+            echo $error->getMessage();
+        }
     }
 }
