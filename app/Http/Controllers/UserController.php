@@ -11,7 +11,9 @@ use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\File;
 use App\Mangapark;
 use App\Manga;
+use App\Novel;
 use App\Comment;
+use App\Lightnovelworld;
 
 class UserController extends Controller
 {
@@ -27,8 +29,7 @@ class UserController extends Controller
 
     public function index()
     {
-        Session::put("isManga", true);
-        $queryMostPopular = DB::select(DB::raw("select mangas.id,mangas.name,count(mangas.name) as searches from mangas inner join manga_user on mangas.id=manga_user.manga_id inner join users on users.id=manga_user.user_id where datediff(manga_user.created_at,CURRENT_TIMESTAMP())<4 group by mangas.name order by searches DESC limit 20"));
+        $queryMostPopular = DB::select(DB::raw("select mangas.id,mangas.name,count(mangas.name) as searches from mangas inner join manga_user on mangas.id=manga_user.manga_id inner join users on users.id=manga_user.user_id where datediff(manga_user.created_at,CURRENT_TIMESTAMP())<4 group by mangas.name,mangas.id order by searches DESC limit 20"));
         $twentyMostPopular = Collection::make();
         foreach ($queryMostPopular as $manga) {
             $twentyMostPopular->push(Manga::where("name", $manga->name)->first());
@@ -49,6 +50,7 @@ class UserController extends Controller
         $twentyLastAdded = Manga::orderBy("created_at", "DESC")->limit(20)->get();
         return view("user.index", compact("twentyMostPopular", "twentyBestRated", "twentyLastAdded"));
     }
+
     /**
      * Store a newly created resource in storage.
      *
@@ -57,18 +59,25 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      * 
      */
-    public function showManga($nombre, $mangaName)
+    public function show($nombre, $resourceType, $resourceName)
     {
-        //la logica de isManga deberia de ir en un middleware porque se repite siempre
-        //$isManga = $request->has("typeSelected");
-        Session::put("isManga", true);
-        $resource = Manga::where("name", $mangaName)->first();
-        $commentsFound = $resource->comments;
+        switch ($resourceType) {
+            case ("manga"):
+                $resource = Manga::where("name", $resourceName)->first();
+                break;
+            case ("novel");
+                $resource = Novel::where("name", $resourceName)->first();
+                break;
+            default:
+                abort(404);
+                break;
+        }
+        $commentsFound = $resource->comments();
         $commented = !is_null(Auth::user()->comments()->where("commentable_id", $resource->id)->first());
         $resource->users()->attach(Auth::user());
-        return view("user.show", compact("resource", "commentsFound", "commented"));
-        //return ["resource" => $resource, "comments" => $resourceCommentsFormatted];
+        return view("user.show", compact("resource", "commentsFound", "commented", "resourceType"));
     }
+
     /**
      * Store a newly created resource in storage.
      *
@@ -80,15 +89,58 @@ class UserController extends Controller
     public function search($nombre, Request $request)
     {
         $seriesName = str_replace(" ", "-", $request->input("seriesName"));
-        $totalSearchResults = Manga::where('name', $seriesName)
-            ->orWhere('name', 'like', '%' . $seriesName . '%')->count();
-        $pageNumbersTotal = ceil($totalSearchResults / 28);
-        $page = is_null($request->input("page")) ? 1 : $request->input("page");
-        $isManga = $request->has("typeSelected");
-        Session::put("isManga", $isManga);
-        $resources =  $isManga ? Manga::where('name', $seriesName)
-            ->orWhere('name', 'like', '%' . $seriesName . '%')->orderBy("mangas.name", "ASC")->skip(($page - 1) * 28)->take(28)->get() : "novel";
-        return view("user.search", compact("resources", "seriesName", "pageNumbersTotal", "page"));
+        $pageManga = is_null($request->input("pageManga")) ? 1 : $request->input("pageManga");
+        $pageNovel = is_null($request->input("pageNovel")) ? 1 : $request->input("pageNovel");
+        $searchMangas = $this->searchResource($seriesName, 28, $pageManga, "manga");
+        $resources["mangas"]["resources"] = $searchMangas["resources"];
+        $resources["mangas"]["totalPages"] = ceil($searchMangas["total"] / 28);
+        $resources["mangas"]["page"] = $pageManga;
+        $searchNovels = $this->searchResource($seriesName, 28, $pageNovel, "novel");
+        $resources["novels"]["resources"] = $searchNovels["resources"];
+        $resources["novels"]["totalPages"] = ceil($searchNovels["total"] / 28);
+        $resources["novels"]["page"] = $pageNovel;
+        return view("user.search", compact("resources", "seriesName"));
+    }
+
+    public function orderByCallbackDefault($resources)
+    {
+        return $resources->orderBy("name", "ASC");
+    }
+
+    public function searchResource($resourceName, $resourceBatchNumber, $batchPage, $type, $orderByCallBack = false, $additionalParams = false)
+    {
+        switch ($type) {
+            case "manga":
+                $resources = Manga::Where('name', 'like', $resourceName . '%');
+                break;
+            case "novel":
+                $resources = Novel::Where("name", "like",  $resourceName . "%");
+                break;
+        }
+        if ($additionalParams) {
+            $resources = $this->wherePipeConstructor($additionalParams, $resources);
+        }
+        $resources = $orderByCallBack ? $orderByCallBack($resources) : $this->orderByCallbackDefault($resources);
+        $total = $resources->count();
+        return ["resources" => $resources->skip(($batchPage - 1) * $resourceBatchNumber)->take($resourceBatchNumber)->get(), "total" => $total];
+    }
+    public function wherePipeConstructor($params, $resources)
+    {
+        foreach ($params as $columnName => $columnValues) {
+            if (!is_null($columnValues)) {
+                if (isset($columnValues["included"]) && !is_null($columnValues["included"][0])) {
+                    foreach ($columnValues["included"] as $value) {
+                        $resources = $resources->Where($columnName, "like", "%" . $value . "%");
+                    }
+                }
+                if (isset($columnValues["excluded"]) && !is_null($columnValues["excluded"][0])) {
+                    foreach ($columnValues["excluded"] as $value) {
+                        $resources = $resources->Where($columnName, "not like", "%" . $value . "%");
+                    }
+                }
+            }
+        }
+        return $resources;
     }
     /**
      * Store a newly created resource in storage.
@@ -99,65 +151,42 @@ class UserController extends Controller
      */
     public function history($nombre, Request $request)
     {
-        $page = $request->input("page");
+        /* $page = $request->input("page");
         $totalSearchResults = Auth::user()->mangas()->withPivot("download", "created_at")->whereNotNull("manga_user.created_at")->count();
         $totalPages = ceil($totalSearchResults / 30);
         $page = is_null($request->input("page")) ? 1 : $request->input("page");
         $historyPageResults = Auth::user()->mangas()->withPivot("download", "created_at")->whereNotNull("manga_user.created_at")->orderBy("manga_user.created_at", "DESC")->skip(($page - 1) * 30)->take(30)->get();
         foreach ($historyPageResults as $result) {
             $result->pivot->download = json_decode($result->pivot->download, true);
+        } */
+        $page = $request->input("page");
+        $page = is_null($request->input("page")) ? 1 : $request->input("page");
+        $totalResult = DB::select(DB::raw("select * from (
+            (select 'manga' as resourceType,users.id as userID,manga_user.created_at,download,mangas.name as nombre 
+                from users 
+                join manga_user 
+                on users.id=manga_user.user_id 
+                join mangas 
+                on mangas.id=manga_user.manga_id 
+                where manga_user.created_at is not null)
+            UNION ALL 
+            (select 'novel' as resourceType,users.id as userID,novel_user.created_at,download,novels.name as nombre 
+            from users 
+            join novel_user 
+            on users.id=novel_user.user_id 
+            join novels 
+            on novels.id=novel_user.novel_id 
+            where novel_user.created_at is not null)
+        ) table1 where userID = :userID order by created_at DESC"), ["userID" => Auth::user()->id]);
+        $totalResult = Collection::make($totalResult);
+        $totalPages = ceil($totalResult->count() / 30);
+        $pageResults = $totalResult->skip(($page - 1) * 30)->take(30);
+        foreach ($pageResults as $result) {
+            $result->download = json_decode($result->download, true);
         }
-        return view("user.history", compact("historyPageResults", "totalPages", "page"));
+        return view("user.history", compact("pageResults", "totalPages", "page"));
     }
 
-    /**
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     * 
-     */
-    public function getNovel($request)
-    {
-    }
-    /**
-     * @param  \Illuminate\Http\Request  $request
-     * 
-     */
-    public function getManga($request)
-    {
-        $seriesName = str_replace(" ", "-", $request->input("seriesName"));
-        $scrapper = new Mangapark();
-        $result = $scrapper->getSeriesInfo($seriesName, ["withImagen" => true]);
-        $this->saveManga($result);
-        return $result;
-    }
-
-    public function saveManga($data)
-    {
-        $formattedDataForTable = [
-            "name" => $data["name"],
-            "imageInfo" => $data["imageInfo"],
-            "alternativeTitle" => $data["otherInfo"]["Alternative"],
-            "author" => $data["otherInfo"]["Author(s)"],
-            "artist" => $data["otherInfo"]["Artist(s)"],
-            "genre" => $data["otherInfo"]["Genre(s)"],
-            "type" => $data["otherInfo"]["Type"],
-            "synopsis" => $data["synopsis"],
-            "status" => $data["otherInfo"]["Status"],
-            "chapters" => json_encode($data["versions"]),
-        ];
-        //si el manga existia, se updatea
-        if ($manga = Manga::where("name", $data["name"])->first()) {
-            $manga->update($formattedDataForTable);
-            //si el usuario no lo tiene, se le asocia
-            if (!Auth::user()->mangas()->where("name", $data["name"])->first()) {
-                $manga->users()->attach(Auth::user());
-            }
-        } else {
-            //si no existia, se crea y asocia a su usuario
-            $manga = Manga::create($formattedDataForTable);
-            Auth::user()->mangas()->attach($manga);
-        }
-    }
 
     /**
      * Store a newly created resource in storage.
@@ -167,13 +196,35 @@ class UserController extends Controller
      * @param string $seriesName
      * @return \Illuminate\Http\Response
      */
-    public function download($nombre, Request $request)
+    public function download($nombre, $resourceType, $resourceName, Request $request)
     {
+        ini_set('max_execution_time', 1800);
         $selection = $request->input("selection");
         if (!$selection) {
             //hacerlo con sesiones
+            Session::flash("error", "Nothing Chosen");
             return "nothing chosen";
         }
+        switch ($resourceType) {
+            case ("manga"):
+                $download = $this->downloadManga($resourceName, $selection);
+                break;
+            case ("novel"):
+                //return str_replace("<p>", "", str_replace("</p>", "\n\n", Novel::where("name", $resourceName)->first()->novel_chapters->where("number", 0)->first()->content));
+                $novel = Novel::where("name", $resourceName)->first();
+                $chapters = $novel->novel_chapters->whereIn("number", $selection);
+                $novel->users()->attach(Auth::user(), ["download" => json_encode($selection)]);
+                $lightNovelWorld = new Lightnovelworld();
+                $lightNovelWorld->createBook($chapters, $resourceName, public_path() . "/users/" . Auth::user()->id);
+                $download = public_path() . "/users/" . Auth::user()->id . "/" . $resourceName . ".pdf";
+                break;
+            default:
+                abort(404);
+                break;
+        }
+        return response()->download($download);
+
+
         $resource = Manga::where("name", $request->input("resourceName"))->first();
         $resourceChapters = json_decode($resource->chapters, true);
         foreach ($selection as $version => $versionChapters) {
@@ -195,5 +246,62 @@ class UserController extends Controller
         $scrapper->downloadVersions($selection, Auth::user(), $request->input("resourceName"));
         File::deleteDirectory(public_path() . "/users/" . Auth::user()->id . "/" . $request->input("resourceName"));
         return response()->download($finalName);
+    }
+    public function downloadNovel($resourceName, $selection)
+    {
+        $chapters = Novel::where("name", $resourceName)->novel_chapters->whereIn("novel_chapter.id", $selection);
+
+        return $chapters;
+    }
+    public function downloadManga($resourceName, $selection)
+    {
+        $resource = Manga::where("name", $resourceName)->first();
+        $resourceChapters = json_decode($resource->chapters, true);
+        foreach ($selection as $version => $versionChapters) {
+            foreach ($versionChapters as $versionChapter) {
+                $selection[$version][$versionChapter] = $resourceChapters[$version]["chapters"][$versionChapter];
+            }
+        }
+        //si existe una descarga anterior para ese recurso y fue 
+        //del mismo tipo, entonces se descarga, si no, se scrappea y elimina la descarga anterior.
+        $finalName = public_path() . "/users/" . Auth::user()->id . "/" . $resourceName . ".zip";
+        $lastDownload = Auth::user()->mangas()->withPivot("download", "created_at")->where("mangas.name", $resourceName)->whereNotNull("download")->orderBy("manga_user.created_at", "DESC")->first();
+        $resource->users()->attach(Auth::user(), ["download" => json_encode($selection)]);
+        if (file_exists($finalName) && !is_null($lastDownload) && $lastDownload->pivot->download === json_encode($selection)) {
+            return response()->download($finalName);
+        }
+        File::deleteDirectory(public_path() . "/users/" . Auth::user()->id);
+        $scrapper = new Mangapark(public_path() . "/users");
+        //tarda a razon de 13 segundos por capitulo, realizar seguimiento con chrono y optimizar...
+        $scrapper->downloadVersions($selection, Auth::user(), $resourceName);
+        File::deleteDirectory(public_path() . "/users/" . Auth::user()->id . "/" . $resourceName);
+        return $finalName;
+    }
+    public function advancedSearch($nombre, Request $request)
+    {
+        if (is_null($request->input("selection"))) {
+            Session::flash("search error", "select something!");
+            return view("user.advancedSearch");
+        }
+        $selection = $request->input("selection");
+        $currentPage = is_null($request->input("pageManga")) ? 1 : $request->input("pageManga");
+        $searchMangas = $this->searchResource($selection["name"], 28, $currentPage, "manga", false, $selection);
+        $resources = $searchMangas["resources"];
+        $totalPages = ceil($searchMangas["total"] / 28);
+        /* $searchNovels = $this->searchResource($seriesName, 28, $pageNovel, "novel");
+        $novels = $resources["novels"]["resources"] = $searchNovels["resources"];
+        $resources["novels"]["totalPages"] = ceil($searchNovels["total"] / 28);
+        $resources["novels"]["page"] = $pageNovel; */
+        $resourceType = "manga";
+        $baseURL = "http://172.17.0.2/sercopiDownload/public/user/" . Auth::user()->name . "/advancedSearch?pageManga=";
+        $viewManga =  view("user.layouts.pagination", compact("resources", "currentPage", "resourceType", "totalPages", "baseURL"))->render();
+        $pageNovel = is_null($request->input("pageNovel")) ? 1 : $request->input("pageNovel");
+        $searchNovels = $this->searchResource($selection["name"], 28, $currentPage, "novel", false, $selection);
+        $resources = $searchNovels["resources"];
+        $totalPages = ceil($searchNovels["total"] / 28);
+        $resourceType = "novel";
+        $baseURL = "http://172.17.0.2/sercopiDownload/public/user/" . Auth::user()->name . "/advancedSearch?pageNovel=";
+        $viewNovel =  view("user.layouts.pagination", compact("resources", "currentPage", "resourceType", "totalPages", "baseURL"))->render();
+        return json_encode("<h2>Mangas</h2>" . $viewManga . "<hr><h2>Novels</h2>" . $viewNovel);
     }
 }

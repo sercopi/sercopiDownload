@@ -1,4 +1,7 @@
 <?php
+
+use App\libs\fpdf182\fpdf;
+
 class Lightnovelworld extends Scrapper
 {
     public $baseURL1 = "https://www.lightnovelworld.com/novel/";
@@ -14,7 +17,7 @@ class Lightnovelworld extends Scrapper
         $doc = new \DOMDocument("1.0", "utf-8");
         @$doc->loadHTML($html);
         $xpath = new \DOMXPath($doc);
-        $seriesInfo["name"] = $name;
+        $seriesInfo["name"] = $name ? $name : explode("/", $url)[4];
         $image = $xpath->query("/html/body/main/article/header/div/div[1]/figure/img")->item(0);
         if (!is_null($image)) {
             $seriesInfo["imageInfo"] = base64_encode($this->wget($image->getAttribute("src")));
@@ -43,7 +46,7 @@ class Lightnovelworld extends Scrapper
         }
         $genres = $xpath->query("/html/body/main/article/header/div/div[2]/div[4]/ul/li/a");
         foreach ($genres as $genre) {
-            $seriesInfo["otherInfo"]["genres"][] = $genre->nodeValue;
+            $seriesInfo["otherInfo"]["genre"][] = $genre->nodeValue;
         }
         $lastChapter = $xpath->query("/html/body/main/article/header/div/div[2]/div[2]/span[1]/strong")->item(0);
         if (!is_null($lastChapter)) {
@@ -54,12 +57,13 @@ class Lightnovelworld extends Scrapper
 
     public function getAllChapters($seriesInfo, $limit = false)
     {
-        if (!$limit) {
-            $limit = $seriesInfo["lastChapter"];
-        }
         if ($limit > $seriesInfo["lastChapter"]) {
             return "No hay tantos capítulos";
         }
+        if (!$limit) {
+            $limit = $seriesInfo["lastChapter"];
+        }
+
         $seriesInfo["chapters"] = [];
         for ($i = 1; $i <= $limit; $i++) {
             $chapterURL = $this->baseURL1 . $seriesInfo["name"] . "/chapter-" . $i;
@@ -80,7 +84,7 @@ class Lightnovelworld extends Scrapper
             $chapterContent .= "<p>" . $contentLine->nodeValue . "</p>";
         }
         $chapter["content"] = $chapterContent;
-        $title = $xpath->query("/html/body/main/article/section[1]/div[2]/p[1]/strong")->item(0);
+        $title = $xpath->query("/html/body/main/article/header/div/div/h2")->item(0);
         if (!is_null($title)) {
             $chapter["title"] = $title->nodeValue;
         }
@@ -105,9 +109,8 @@ class Lightnovelworld extends Scrapper
                     $title = $xpath->query("./h4", $novel)->item(0)->nodeValue;
                     echo "----Starting Novel: " . $title . PHP_EOL;
                     $href = $novel->getAttribute("href");
-                    $name = explode("/", $href)[2];
-                    $result = $this->getAllChapters($this->getSeriesInfo($name, $this->baseURL2 . $href));
-                    $allNovels[$page][$title] = $result;
+                    $novelURL = $this->baseURL2 . $href;
+                    $allNovels[$page][$title] = $novelURL;
                 }
                 $page++;
             } while (!is_null($pageNovels->item(0)));
@@ -123,10 +126,8 @@ class Lightnovelworld extends Scrapper
                     $title = $xpath->query("./h4", $novel)->item(0)->nodeValue;
                     echo "----Starting Novel: " . $title . PHP_EOL;
                     $href = $novel->getAttribute("href");
-                    $name = explode("/", $href)[2];
-                    $result = $this->getAllChapters($this->getSeriesInfo($name, $this->baseURL2 . $href));
-                    $allNovels[$i][$title] = $result;
-                    //var_dump($result);
+                    $novelURL = $this->baseURL2 . $href;
+                    $allNovels[$i][$title] = $novelURL;
                 }
             }
         }
@@ -144,5 +145,19 @@ class Lightnovelworld extends Scrapper
             $genres[] = str_replace(" ", "-", strtolower(trim($category->nodeValue)));
         }
         return $genres;
+    }
+    public function createBook($chapters, $name, $downloadDir)
+    {
+        $pdf = new FPDF();
+        foreach ($chapters as $chapter) {
+            $content = str_replace("<p>", "", str_replace("</p>", "\n\n", $chapter->content));
+            $pdf->AddPage();
+            $pdf->setFont("Arial", "B", 14, "B", "C");
+            $pdf->MultiCell(0, 5, $chapter->title ? $chapter->title : "chapter " . $chapter->number, "B", "C");
+            $pdf->SetFont('Times', "", 12);
+            $pdf->MultiCell(0, 5, $content, "B");
+            $pdf->Ln();
+        }
+        $pdf->Output('F', $downloadDir . "/" . $name . ".pdf");
     }
 }
