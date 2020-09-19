@@ -8,12 +8,16 @@ class Novel extends Model
 {
     protected $fillable = ["name", "author", "alternativeTitle", "status", "genre", "synopsis", "score", "imageInfo"];
 
-    public function user()
+    public function users()
     {
-        return $this->belongsTo("App\Novel");
+        return $this->belongsToMany("App\User");
     }
     public function novel_chapters()
     {
-        return $this->hasMany("App\Novelchapter");
+        return $this->hasMany("App\NovelChapter");
+    }
+    public function comments()
+    {
+        return $this->morphMany("App\Comment", "commentable");
     }
 }

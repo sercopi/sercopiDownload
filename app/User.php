@@ -62,6 +62,6 @@ class User extends Authenticatable
     }
     public function novels()
     {
-        return $this->hasMany("App\Novel");
+        return $this->belongsToMany("App\Novel");
     }
 }
