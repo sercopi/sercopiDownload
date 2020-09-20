@@ -3,10 +3,11 @@
 @include("user.layouts.navbar")
 @endsection
 @section("contenido")
-@include("user.layouts.paginationMenu",["currentPage"=>$page,"pages"=>$totalPages,"baseURL"=>URL::to("/user/".Auth::user()->name."/history?page=")])
 <div class="container">
     <div class="row">
         <div class="col">
+            @include("user.layouts.paginationMenu",["currentPage"=>$page,"pages"=>$totalPages,"baseURL"=>URL::to("/user/".Auth::user()->name."/history?page=")])
+
             <table class="table table-striped table-bordered table-sm" cellspacing="0" width="100%">
                 <thead>
                     <tr>
@@ -28,10 +29,10 @@
                         <td>
                             @if ($result->resourceType=="manga")
                             <a
-                                href={{URL::to("/user/".Auth::user()->nombre."/manga/".$result->nombre)}}>{{$result->nombre}}</a>
+                                href={{URL::to("/user/".Auth::user()->name."/manga/".$result->nombre)}}>{{$result->nombre}}</a>
                             @else
                             <a
-                                href={{URL::to("/user/".Auth::user()->nombre."/novel/".$result->nombre)}}>{{$result->nombre}}</a>
+                                href={{URL::to("/user/".Auth::user()->name."/novel/".$result->nombre)}}>{{$result->nombre}}</a>
                             @endif
                         </td>
                         <td>
@@ -72,35 +73,31 @@
                             </ul>
                             @elseif (!is_null($result->download) && $result->resourceType=="novel")
                             <ul>
-                                <ul>
-                                    <div class="panel-group" role="tablist">
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading" role="tab"
-                                                id={{"collapseListGroupHeading".$index}}>
-                                                <div class="panel-title">
-                                                    <a class="{{count($result->download)>10?'collapsed':''}}"
-                                                        data-toggle="collapse" href={{"#collapseListGroup".$index}}
-                                                        aria-expanded="false"
-                                                        aria-controls={{"collapseListGroup".$index}}>
-                                                        LightNovelWorld
-                                                    </a>
-                                                </div>
-                                            </div>
-                                            <div id={{"collapseListGroup".$index}} class="panel-collapse collapse"
-                                                role="tabpanel" aria-labelledby={{"collapseListGroupHeading".$index}}>
-                                                <ul class="list-group">
-                                                    @foreach($result->download as $number)
-                                                    <li class="list-group-item">
-                                                        <a
-                                                            href="{{'https://www.lightnovelworld.com/novel/warlock-of-the-magus-world/chapter-'.($number+1)}}">{{"chapter: ".($number+1)}}</a>
-                                                    </li>
-                                                    @endforeach
-                                                </ul>
+                                <div class="panel-group" role="tablist">
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading" role="tab" id={{"collapseListGroupHeading".$index}}>
+                                            <div class="panel-title">
+                                                <a class="{{count($result->download)>10?'collapsed':''}}"
+                                                    data-toggle="collapse" href={{"#collapseListGroup".$index}}
+                                                    aria-expanded="false" aria-controls={{"collapseListGroup".$index}}>
+                                                    LightNovelWorld
+                                                </a>
                                             </div>
                                         </div>
+                                        <div id={{"collapseListGroup".$index}} class="panel-collapse collapse"
+                                            role="tabpanel" aria-labelledby={{"collapseListGroupHeading".$index}}>
+                                            <ul class="list-group">
+                                                @foreach($result->download as $number)
+                                                <li class="list-group-item">
+                                                    <a
+                                                        href="{{'https://www.lightnovelworld.com/novel/warlock-of-the-magus-world/chapter-'.($number+1)}}">{{"chapter: ".($number+1)}}</a>
+                                                </li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
                                     </div>
+                                </div>
 
-                                </ul>
                             </ul>
                             @else
                             No Download
@@ -110,10 +107,11 @@
                     @endforeach
                 </tbody>
             </table>
+            @include("user.layouts.paginationMenu",["currentPage"=>$page,"pages"=>$totalPages,"baseURL"=>URL::to("/user/".Auth::user()->name."/history?page=")])
+
         </div>
     </div>
 </div>
-@include("user.layouts.paginationMenu",["currentPage"=>$page,"pages"=>$totalPages,"baseURL"=>URL::to("/user/".Auth::user()->name."/history?page=")])
 
 @endsection
 @section("pie")
