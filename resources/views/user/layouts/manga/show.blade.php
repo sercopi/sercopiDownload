@@ -29,6 +29,6 @@
 <hr>
 <div class="row justify-content-center">
     <div class="col">
-        @include("user.layouts.manga.versions",["versions"=>json_decode($resource->chapters,true),"resourceName"=>$resource->name])
+        @include("user.layouts.manga.versions",["versions"=>json_decode($resource->chapters,true),"resourceName"=>$resource->name,"type"=>"manga"])
     </div>
 </div>

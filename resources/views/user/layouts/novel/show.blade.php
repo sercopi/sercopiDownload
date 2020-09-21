@@ -7,9 +7,10 @@
     @if($resource)
     <div class="row">
         <div class="col">
-            <h1 class="text-info">{{str_replace("-"," ",$resource->name)}}</h1>
+            <h2 class="text-info">{{str_replace("-"," ",$resource->name)}}</h2>
         </div>
     </div>
+    <hr>
     <h2>Rating: {{$resource->score}}</h2>
     <div class="row">
         <div class="col-5">
@@ -47,7 +48,7 @@
     <hr>
     <div class="row">
         <div class="col">
-            @include("user.layouts.comments.comments",["comments"=>$commentsFound,"resourceName"=>$resource->name,"commented"=>$commented])
+            @include("user.layouts.comments.comments",["comments"=>$commentsFound,"resourceName"=>$resource->name,"commented"=>$commented,"type"=>"novel"])
         </div>
     </div>
     @else
