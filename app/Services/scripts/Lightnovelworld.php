@@ -55,17 +55,20 @@ class Lightnovelworld extends Scrapper
         return $seriesInfo;
     }
 
-    public function getAllChapters($seriesInfo, $limit = false)
+    public function getAllChapters($seriesInfo, $from = false, $to = false)
     {
-        if ($limit > $seriesInfo["lastChapter"]) {
+        if ($to > $seriesInfo["lastChapter"]) {
             return "No hay tantos capítulos";
         }
-        if (!$limit) {
-            $limit = $seriesInfo["lastChapter"];
+        if (!$to) {
+            $to = $seriesInfo["lastChapter"];
+        }
+        if (!$from) {
+            $from = 1;
         }
 
         $seriesInfo["chapters"] = [];
-        for ($i = 1; $i <= $limit; $i++) {
+        for ($i = $from; $i <= $to; $i++) {
             $chapterURL = $this->baseURL1 . $seriesInfo["name"] . "/chapter-" . $i;
             $seriesInfo["chapters"][] = $this->getChapter($chapterURL);
         }

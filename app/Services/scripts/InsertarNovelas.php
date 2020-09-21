@@ -26,22 +26,26 @@ class InsertarNovelas extends Comunicacion
             return false;
         }
     }
-    public function insertChapters($chapters, $id)
+    public function insertChapters($chapters, $id, $lastNumberInserted = 0)
     {
         $sqlInsertarChapter = "INSERT INTO `novel_chapters` (`number`,`title`,`content`,`novel_id`) VALUES ";
+        $sqlInsertarHistory = "INSERT INTO `novels_update_history` (`chapters_introduced`,`novel_id`) VALUES(?,?)";
         $dataToInsert = [];
+        $chaptersInserted = [];
         foreach ($chapters as $number => $chapter) {
             $sqlInsertarChapter .= "(?,?,?,?),";
-            $dataToInsert[] = $number;
+            $dataToInsert[] = $lastNumberInserted + $number;
+            $chaptersInserted[] = $lastNumberInserted + $number;
             $dataToInsert[] = $chapter["title"];
             $dataToInsert[] = $chapter["content"];
             $dataToInsert[] = $id;
         }
         $sqlInsertarChapter = substr($sqlInsertarChapter, 0, -1);
         $stmtInsertarChapter = $this->oConn->prepare($sqlInsertarChapter);
+        $stmtInsertarHistory = $this->oConn->prepare($sqlInsertarHistory);
         try {
             $stmtInsertarChapter->execute($dataToInsert);
-            echo "capitulos insertados." . PHP_EOL;
+            $stmtInsertarHistory->execute([json_encode($chaptersInserted), $id]);
         } catch (PDOException $e) {
             echo $e->getMessage();
         }
@@ -52,6 +56,16 @@ class InsertarNovelas extends Comunicacion
         try {
             $stmtGetId->execute([$name]);
             return $stmtGetId->fetchAll()[0]["id"];
+        } catch (PDOException $error) {
+            echo $error->getMessage();
+        }
+    }
+    public function getLastChapter($name)
+    {
+        $stmtGetLastChapter = $this->oConn->prepare("select count(novels.id) as capitulos from novels join novel_chapters on novels.id = novel_chapters.novel_id where novels.name=?");
+        try {
+            $stmtGetLastChapter->execute([$name]);
+            return $stmtGetLastChapter->fetchAll()[0]["capitulos"];
         } catch (PDOException $error) {
             echo $error->getMessage();
         }

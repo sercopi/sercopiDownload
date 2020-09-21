@@ -50,59 +50,29 @@ foreach ($genres as $genre) {
                 var_dump($lightNovelWorld->getChapter($argv[3]));
                 break;
             case ("novel"):
-                $novelInfo = $lightNovelWorld->getSeriesInfo(false, $argv[3]);
-                echo "Info obtained" . PHP_EOL;
-                echo "getting chapters..." . PHP_EOL;
-                $novelWithChapters = $lightNovelWorld->getAllChapters($novelInfo);
-                echo "------capitulos: " . count($novelWithChapters["chapters"]) . PHP_EOL;
-                echo "Inserting Novel" . PHP_EOL;
-
-                $novelID = $insert->insertNovel($novelWithChapters);
-
-                if (!$novelID) {
-                    $novelID = $insert->getId($novelInfo["name"]);
-                }
-                echo "Inserting Chapters" . PHP_EOL;
-
-                $insert->insertChapters($novelWithChapters["chapters"], $novelID);
+                //arg3 es la url
+                downloadNovel($argv[3], $lightNovelWorld, $insert);
                 break;
             case ("all"):
-                if ($argv[3]) {
+                echo "getting all novels from pages" . PHP_EOL;
+                if (isset($argv[3])) {
                     $pages = $lightNovelWorld->getAllNovels($argv[3]);
                     foreach ($pages as $page) {
+                        echo "-------------------" . PHP_EOL;
+                        echo "Starting inserts from page: " . $page . PHP_EOL;
                         foreach ($page as $title => $novelURL) {
                             echo "starting with: " . $title . PHP_EOL;
-                            $novelInfo = $lightNovelWorld->getSeriesInfo(false, $novelURL);
-                            echo "obtained basic info" . PHP_EOL;
-                            $novelWithChapters = $lightNovelWorld->getAllChapters($novelInfo);
-                            echo "obtained chapters" . PHP_EOL;
-                            echo "------capitulos: " . count($novelWithChapters["chapters"]) . PHP_EOL;
-                            $novelID = $insert->insertNovel($novelWithChapters);
-                            if (!$novelID) {
-                                $novelID = $insert->getId($novelInfo["name"]);
-                            }
-                            echo "novel inserted" . PHP_EOL;
-                            $insert->insertChapters($novelWithChapters["chapters"], $novelID);
-                            echo "chapters inserted" . PHP_EOL;
+                            downloadNovel($novelURL, $lightNovelWorld, $insert);
                         }
                     }
                 } else {
                     $pages = $lightNovelWorld->getAllNovels();
-                    foreach ($pages as $page) {
+                    foreach ($pages as $number => $page) {
+                        echo "-------------------" . PHP_EOL;
+                        echo "Starting inserts from page: " . $number . PHP_EOL;
                         foreach ($page as $title => $novelURL) {
                             echo "starting with: " . $title . PHP_EOL;
-                            $novelInfo = $lightNovelWorld->getSeriesInfo(false, $novelURL);
-                            echo "obtained basic info" . PHP_EOL;
-                            $novelWithChapters = $lightNovelWorld->getAllChapters($novelInfo);
-                            echo "obtained chapters" . PHP_EOL;
-                            echo "------capitulos: " . count($novelWithChapters["chapters"]) . PHP_EOL;
-                            $novelID = $insert->insertNovel($novelWithChapters);
-                            if (!$novelID) {
-                                $novelID = $insert->getId($novelInfo["name"]);
-                            }
-                            echo "novel inserted" . PHP_EOL;
-                            $insert->insertChapters($novelWithChapters["chapters"], $novelID);
-                            echo "chapters inserted" . PHP_EOL;
+                            downloadNovel($novelURL, $lightNovelWorld, $insert);
                         }
                     }
                 }
@@ -111,47 +81,40 @@ foreach ($genres as $genre) {
                 echo "wrong arguments" . PHP_EOL;
                 break;
         }
-        //Obtener un capitulo
-        //echo $lightNovelWorld->getChapter("https://www.lightnovelworld.com/novel/trash-of-the-counts-family-web-novel/chapter-3");
-
-        //Obtener todos los capitulos con limite
-        //var_dump($lightNovelWorld->getAllChapters($lightNovelWorld->getSeriesInfo("under the oak tree"), 3));
-        //$lightNovelWorld->getSeriesInfo("under the oak tree");
-        //var_dump($lightNovelWorld->getAllGenres());
-
-        //Obtener una novela y sus capitulos
-        /* $novelInfo = $lightNovelWorld->getSeriesInfo(false, "https://www.lightnovelworld.com/novel/the-kings-avatar-for-the-glory");
-    $insert = new InsertarNovelas(["DSN" => "mysql:host=localhost;dbname=laravelApp", "USER" => "sergio", "PASSWORD" => "sergiio666"]);
-    $novelWithChapters = $lightNovelWorld->getAllChapters($novelInfo);
-    echo "------capitulos: " . count($novelWithChapters["chapters"]) . PHP_EOL;
-    $novelID = $insert->insertNovel($novelWithChapters);
-    if (!$novelID) {
-        $novelID = $insert->getId($novelInfo["name"]);
-    }
-    $insert->insertChapters($novelWithChapters["chapters"], $novelID); */
-
-        //Obtener todas las novelas y sus capitulos con limite de pagina;
-        /* $insert = new InsertarNovelas(["DSN" => "mysql:host=localhost;dbname=laravelApp", "USER" => "sergio", "PASSWORD" => "sergiio666"]);
-        $pages = $lightNovelWorld->getAllNovels(1);
-        foreach ($pages as $page) {
-            foreach ($page as $title => $novelURL) {
-                echo "starting with: " . $title . PHP_EOL;
-                $novelInfo = $lightNovelWorld->getSeriesInfo(false, $novelURL);
-                echo "obtained basic info" . PHP_EOL;
-                $novelWithChapters = $lightNovelWorld->getAllChapters($novelInfo);
-                echo "obtained chapters" . PHP_EOL;
-                echo "------capitulos: " . count($novelWithChapters["chapters"]) . PHP_EOL;
-                $novelID = $insert->insertNovel($novelWithChapters);
-                if (!$novelID) {
-                    $novelID = $insert->getId($novelInfo["name"]);
-                }
-                echo "novel inserted" . PHP_EOL;
-                $insert->insertChapters($novelWithChapters["chapters"], $novelID);
-                echo "chapters inserted" . PHP_EOL;
-            }
-        } */
         break;
     default:
         echo "Wrong arguments" . PHP_EOL;
         break;
+}
+function downloadNovel($url, $lightNovelWorld, $insert)
+{
+    $novelInfo = $lightNovelWorld->getSeriesInfo(false, $url);
+    var_dump($novelInfo);
+    echo "Info obtained" . PHP_EOL;
+    echo "last chapter: " . $novelInfo["lastChapter"] . PHP_EOL;
+    $lastInserted = $insert->getLastChapter($novelInfo["name"]);
+    echo "last inserted: " . $lastInserted . PHP_EOL;
+    if ($lastInserted < $novelInfo["lastChapter"]) {
+        echo "getting chapters..." . PHP_EOL;
+        $novelWithChapters = $lightNovelWorld->getAllChapters($novelInfo, $lastInserted + 1, false);
+        echo "------capitulos: " . count($novelWithChapters["chapters"]) . PHP_EOL;
+        //si ya hay capitulos, no insertamos la novela
+        $novelID = false;
+
+        if (!$lastInserted) {
+            echo "Inserting Novel" . PHP_EOL;
+            $novelID = $insert->insertNovel($novelWithChapters);
+        }
+        if (!$novelID) {
+            echo "Novel already Inserted" . PHP_EOL;
+            $novelID = $insert->getId($novelInfo["name"]);
+        }
+        echo "Inserting Chapters" . PHP_EOL;
+
+        $insert->insertChapters($novelWithChapters["chapters"], $novelID, $lastInserted);
+        echo "capitulos insertados y registro actualizado." . PHP_EOL;
+        echo "-----------------" . PHP_EOL;
+    } else {
+        echo "Novel already up to Date" . PHP_EOL;
+    }
 }
