@@ -46,11 +46,6 @@
         </div>
     </div>
     <hr>
-    <div class="row">
-        <div class="col">
-            @include("user.layouts.comments.comments",["comments"=>$commentsFound,"resourceName"=>$resource->name,"commented"=>$commented,"type"=>"novel"])
-        </div>
-    </div>
     @else
     <div class="row">
         <div class="col">

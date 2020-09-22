@@ -30,6 +30,8 @@ Route::post("/user/{nombre}/comment/{type}/{resourceName}/save", "UserCommentsCo
 Route::delete("/user/{nombre}/comment/{type}/{resourceName}/delete", "UserCommentsController@deleteComment");
 Route::put("/user/{nombre}/comment/{type}/{resourceName}/update", "UserCommentsController@updateComment");
 Route::get("/user/{nombre}/comment/{type}/{resourceName}/edit", "UserCommentsController@editComment");
+Route::get("/user/{nombre}/comment/{id}/like", "UserCommentsController@like");
+Route::get("/user/{nombre}/comment/{id}/dislike", "UserCommentsController@dislike");
 Route::get("/user/{nombre}/{type}/{resourceName}", "UserController@show")->name("show");
 Route::get("/user/{nombre}/history", "UserController@history");
 Route::get("/user/{nombre}/email", "UserController@email");

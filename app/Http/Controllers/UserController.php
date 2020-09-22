@@ -34,8 +34,10 @@ class UserController extends Controller
             $message->from("vpssergiocorderopino@gmail.com", "sergio");
         });
         echo "mensaje enviado"; */
-        DownloadResource::dispatch("prueba queue", "sergiiosercopi@gmail.com");
-        echo "job set";
+        /* DownloadResource::dispatch("prueba queue", "sergiiosercopi@gmail.com");
+        echo "job set"; */
+        /* dd(Manga::where("name", "god-among-men-2")->first()->comments()->where("id", 59)->first()->likes()->select(DB::raw('SUM(likes.like) as total'))->get()->first()->total); */
+        dd(Comment::where("user_id", 1)->where("id", 59)->first()->comments()->get());
     }
 
     /**

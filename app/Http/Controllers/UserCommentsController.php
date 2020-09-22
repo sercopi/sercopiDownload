@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Comment;
 use App\Manga;
 use App\Novel;
+use App\Like;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\URL;
@@ -145,5 +146,17 @@ class UserCommentsController extends Controller
         }
         $resource->comments()->where("user_id", Auth::user()->id)->first()->delete();
         return redirect()->route("show", ["nombre" => Auth::user()->name, "type" => $type, "resourceName" => $resourceName]);
+    }
+    public function like($nombre, $id, Request $request)
+    {
+        $like = Like::where("user_id", Auth::user()->id)->where("comment_id", $id)->first();
+        is_null($like) ? Like::create(["user_id" => Auth::user()->id, "comment_id" => $id, "like" => 1]) : $like->update(["like" => $like->like > 0 ? 0 : 1]);
+        return response("", 200);
+    }
+    public function dislike($nombre, $id, Request $request)
+    {
+        $like = Like::where("user_id", Auth::user()->id)->where("comment_id", $id)->first();
+        is_null($like) ? Like::create(["user_id" => Auth::user()->id, "comment_id" => $id, "like" => -1]) : $like->update(["like" => $like->like < 0 ? 0 : -1]);
+        return response("", 200);
     }
 }
