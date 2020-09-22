@@ -4,6 +4,18 @@
 @endsection
 @section("contenido")
 <div class="container">
+    @if (Session::has("error"))
+    <div class="alert alert-danger" role="alert">
+        {{Session::get("error")}}
+    </div>
+    <hr>
+    @endif
+    @if (Session::has("success"))
+    <div class="alert alert-success" role="alert">
+        {{Session::get("success")}}
+    </div>
+    <hr>
+    @endif
     @if($resource)
     <div class="row">
         <div class="col">

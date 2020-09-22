@@ -206,84 +206,39 @@ class UserController extends Controller
      */
     public function download($nombre, $resourceType, $resourceName, Request $request)
     {
-        ini_set('max_execution_time', 1800);
         $selection = $request->input("selection");
         if (!$selection) {
-            //hacerlo con sesiones
-            Session::flash("error", "Nothing Chosen");
-            return "nothing chosen";
+            return redirect()->back()->with("error", "please select something to download!");
         }
         switch ($resourceType) {
             case ("manga"):
-                $download = $this->downloadManga($resourceName, $selection);
+                $resource = Manga::where("name", $resourceName)->first();
+                $resourceChapters = json_decode($resource->chapters, true);
+                foreach ($selection as $version => $versionChapters) {
+                    foreach ($versionChapters as $versionChapter) {
+                        $selection[$version][$versionChapter] = $resourceChapters[$version]["chapters"][$versionChapter];
+                    }
+                }
+                $resource->users()->attach(Auth::user(), ["download" => json_encode($selection)]);
+
+                //tarda a razon de 13 segundos por capitulo, realizar seguimiento con chrono y optimizar...
+                $data = ["selection" => $selection, "userID" => Auth::user()->id, "resourceName" => $resourceName, "path" =>  public_path() . "/users/" . Auth::user()->id];
+                //SUSTITUIR POR EL CORREO DEL USUARIO CUANDO ESTE LISTO DEL TODO
+                DownloadResource::dispatch($data, "manga", "sergiiosercopi@gmail.com");
                 break;
             case ("novel"):
-                //return str_replace("<p>", "", str_replace("</p>", "\n\n", Novel::where("name", $resourceName)->first()->novel_chapters->where("number", 0)->first()->content));
                 $novel = Novel::where("name", $resourceName)->first();
                 $chapters = $novel->novel_chapters->whereIn("number", $selection);
                 $novel->users()->attach(Auth::user(), ["download" => json_encode($selection)]);
-                $lightNovelWorld = new Lightnovelworld();
-                $lightNovelWorld->createBook($chapters, $resourceName, public_path() . "/users/" . Auth::user()->id);
-                $download = public_path() . "/users/" . Auth::user()->id . "/" . $resourceName . ".pdf";
+                $data = ["chapters" => $chapters, "userID" => Auth::user()->id, "resourceName" => $resourceName, "path" =>  public_path() . "/users/" . Auth::user()->id];
+                //SUSTITUIR POR EL CORREO DEL USUARIO CUANDO ESTE LISTO DEL TODO
+                DownloadResource::dispatch($data, "novel", "sergiiosercopi@gmail.com");
                 break;
             default:
                 abort(404);
                 break;
         }
-        return response()->download($download);
-
-
-        $resource = Manga::where("name", $request->input("resourceName"))->first();
-        $resourceChapters = json_decode($resource->chapters, true);
-        foreach ($selection as $version => $versionChapters) {
-            foreach ($versionChapters as $versionChapter) {
-                $selection[$version][$versionChapter] = $resourceChapters[$version]["chapters"][$versionChapter];
-            }
-        }
-        //si existe una descarga anterior para ese recurso y fue 
-        //del mismo tipo, entonces se descarga, si no, se scrappea y elimina la descarga anterior.
-        $finalName = public_path() . "/users/" . Auth::user()->id . "/" . $request->input("resourceName") . ".zip";
-        $lastDownload = Auth::user()->mangas()->withPivot("download", "created_at")->where("mangas.name", $request->input("resourceName"))->whereNotNull("download")->orderBy("manga_user.created_at", "DESC")->first();
-        $resource->users()->attach(Auth::user(), ["download" => json_encode($selection)]);
-        if (file_exists($finalName) && !is_null($lastDownload) && $lastDownload->pivot->download === json_encode($selection)) {
-            return response()->download($finalName);
-        }
-        File::deleteDirectory(public_path() . "/users/" . Auth::user()->id);
-        $scrapper = new Mangapark(public_path() . "/users");
-        //tarda a razon de 13 segundos por capitulo, realizar seguimiento con chrono y optimizar...
-        $scrapper->downloadVersions($selection, Auth::user(), $request->input("resourceName"));
-        File::deleteDirectory(public_path() . "/users/" . Auth::user()->id . "/" . $request->input("resourceName"));
-        return response()->download($finalName);
-    }
-    public function downloadNovel($resourceName, $selection)
-    {
-        $chapters = Novel::where("name", $resourceName)->novel_chapters->whereIn("novel_chapter.id", $selection);
-
-        return $chapters;
-    }
-    public function downloadManga($resourceName, $selection)
-    {
-        $resource = Manga::where("name", $resourceName)->first();
-        $resourceChapters = json_decode($resource->chapters, true);
-        foreach ($selection as $version => $versionChapters) {
-            foreach ($versionChapters as $versionChapter) {
-                $selection[$version][$versionChapter] = $resourceChapters[$version]["chapters"][$versionChapter];
-            }
-        }
-        //si existe una descarga anterior para ese recurso y fue 
-        //del mismo tipo, entonces se descarga, si no, se scrappea y elimina la descarga anterior.
-        $finalName = public_path() . "/users/" . Auth::user()->id . "/" . $resourceName . ".zip";
-        $lastDownload = Auth::user()->mangas()->withPivot("download", "created_at")->where("mangas.name", $resourceName)->whereNotNull("download")->orderBy("manga_user.created_at", "DESC")->first();
-        $resource->users()->attach(Auth::user(), ["download" => json_encode($selection)]);
-        if (file_exists($finalName) && !is_null($lastDownload) && $lastDownload->pivot->download === json_encode($selection)) {
-            return response()->download($finalName);
-        }
-        File::deleteDirectory(public_path() . "/users/" . Auth::user()->id);
-        $scrapper = new Mangapark(public_path() . "/users");
-        //tarda a razon de 13 segundos por capitulo, realizar seguimiento con chrono y optimizar...
-        $scrapper->downloadVersions($selection, Auth::user(), $resourceName);
-        File::deleteDirectory(public_path() . "/users/" . Auth::user()->id . "/" . $resourceName);
-        return $finalName;
+        return redirect()->back()->with("success", "your download will be send to your email!");
     }
     public function advancedSearch($nombre, Request $request)
     {
@@ -296,10 +251,6 @@ class UserController extends Controller
         $searchMangas = $this->searchResource($selection["name"], 28, $currentPage, "manga", false, $selection);
         $resources = $searchMangas["resources"];
         $totalPages = ceil($searchMangas["total"] / 28);
-        /* $searchNovels = $this->searchResource($seriesName, 28, $pageNovel, "novel");
-        $novels = $resources["novels"]["resources"] = $searchNovels["resources"];
-        $resources["novels"]["totalPages"] = ceil($searchNovels["total"] / 28);
-        $resources["novels"]["page"] = $pageNovel; */
         $resourceType = "manga";
         $baseURL = "http://172.17.0.2/sercopiDownload/public/user/" . Auth::user()->name . "/advancedSearch?pageManga=";
         $viewManga =  view("user.layouts.pagination", compact("resources", "currentPage", "resourceType", "totalPages", "baseURL"))->render();

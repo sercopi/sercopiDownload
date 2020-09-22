@@ -1,1 +1,1 @@
-<div><b>{{$title}}</b></div>
+<div>su descarga ha sido procesada: <a href={{$path}}>click aqui para descargar</a></div>

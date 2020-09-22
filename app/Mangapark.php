@@ -74,9 +74,9 @@ class Mangapark extends scrapper
         return $seriesInfo;
     }
 
-    public function downloadVersions($versionsChapters, $user, $seriesName)
+    public function downloadVersions($versionsChapters, $id, $seriesName)
     {
-        $downloadDir = $this->baseDownloadDir . "/" . $user->id . "/" . $seriesName;
+        $downloadDir = $this->baseDownloadDir . "/" . $id . "/" . $seriesName;
         if (!file_exists($downloadDir)) {
             mkdir($downloadDir, 755, true);
         }
@@ -90,7 +90,7 @@ class Mangapark extends scrapper
                 $this->getChapter($chapter, $chapterTitle, $downloadDirVersion);
             }
         }
-        $this->zipChapters($versionsChapters, $user, $seriesName);
+        $this->zipChapters($versionsChapters, $id, $seriesName);
         /* header("Pragma: public");
         header("Expires: 0");
         header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
@@ -106,18 +106,18 @@ class Mangapark extends scrapper
         unlink('/var/www/datas/' . $this->seriesInfo["name"]); */
     }
 
-    public function zipChapters($versionChapters, $user, $seriesName)
+    public function zipChapters($versionChapters, $id, $seriesName)
     {
         $zip = new \ZipArchive;
-        $dir = $this->baseDownloadDir . "/" . $user->id . "/" . $seriesName . ".zip";
+        $dir = $this->baseDownloadDir . "/" . $id . "/" . $seriesName . "_" . date('m-d-Y_hia') .  ".zip";
         if ($zip->open($dir, \ZipArchive::CREATE) === TRUE) {
             foreach ($versionChapters as $version => $chapters) {
                 $zip->addEmptyDir($version);
-                if ($handle = opendir($this->baseDownloadDir . "/" . $user->id . "/" . $seriesName . "/" . $version)) {
+                if ($handle = opendir($this->baseDownloadDir . "/" . $id . "/" . $seriesName . "/" . $version)) {
                     // Add all files inside the directory
                     while (false !== ($entry = readdir($handle))) {
                         if ($entry != "." && $entry != "..") {
-                            $zip->addFile($this->baseDownloadDir . "/" . $user->id . "/" . $seriesName . "/" . $version . "/" . $entry, $version . "/" . $entry);
+                            $zip->addFile($this->baseDownloadDir . "/" . $id . "/" . $seriesName . "/" . $version . "/" . $entry, $version . "/" . $entry);
                         }
                     }
                     closedir($handle);

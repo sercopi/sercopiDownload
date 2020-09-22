@@ -156,6 +156,6 @@ class Lightnovelworld extends Scrapper
             $mpdf->AddPage('', '', '', '', 'on');
             $mpdf->WriteHTML("<h2>" . ($chapter->title ? $chapter->title : $chapter->number) . "</h2><br><hr>" . $chapter->content);
         }
-        $mpdf->Output($downloadDir . "/" . $name . ".pdf", "F");
+        $mpdf->Output($downloadDir . "/" . $name . "_" . date('m-d-Y_hia') . ".pdf", "F");
     }
 }
