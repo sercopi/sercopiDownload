@@ -8,8 +8,7 @@ $(document).ready(function() {
                     orderable: false,
                     className: "dt-body-center"
                 }
-            ],
-            order: [[1, "asc"]]
+            ]
         });
         let selectAll = $(this).find(".select-all");
         // Handle click on "Select all" control
