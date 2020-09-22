@@ -9,11 +9,14 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Mail;
 use App\Mangapark;
 use App\Manga;
 use App\Novel;
 use App\Comment;
 use App\Lightnovelworld;
+use App\Mail\EmailForDownloadQueue;
+use App\Jobs\DownloadResource;
 
 class UserController extends Controller
 {
@@ -22,6 +25,19 @@ class UserController extends Controller
         $this->middleware('auth');
         $this->middleware("user");
     }
+
+    public function email($nombre)
+    {
+        /* $data = ["name" => "sergio", "body" => "prueba"];
+        Mail::send("mails.mail", $data, function ($message) {
+            $message->to("sergiiosercopi@gmail.com", "artisan")->subject("prueba");
+            $message->from("vpssergiocorderopino@gmail.com", "sergio");
+        });
+        echo "mensaje enviado"; */
+        DownloadResource::dispatch("prueba queue", "sergiiosercopi@gmail.com");
+        echo "job set";
+    }
+
     /**
      * Display a listing of the resource.
      * @return \Illuminate\Http\Response
@@ -72,7 +88,7 @@ class UserController extends Controller
                 abort(404);
                 break;
         }
-        $commentsFound = $resource->comments();
+        $commentsFound = $resource->comments()->get();
         $commented = !is_null(Auth::user()->comments()->where("commentable_id", $resource->id)->first());
         $resource->users()->attach(Auth::user());
         return view("user.show", compact("resource", "commentsFound", "commented", "resourceType"));
@@ -151,14 +167,6 @@ class UserController extends Controller
      */
     public function history($nombre, Request $request)
     {
-        /* $page = $request->input("page");
-        $totalSearchResults = Auth::user()->mangas()->withPivot("download", "created_at")->whereNotNull("manga_user.created_at")->count();
-        $totalPages = ceil($totalSearchResults / 30);
-        $page = is_null($request->input("page")) ? 1 : $request->input("page");
-        $historyPageResults = Auth::user()->mangas()->withPivot("download", "created_at")->whereNotNull("manga_user.created_at")->orderBy("manga_user.created_at", "DESC")->skip(($page - 1) * 30)->take(30)->get();
-        foreach ($historyPageResults as $result) {
-            $result->pivot->download = json_decode($result->pivot->download, true);
-        } */
         $page = $request->input("page");
         $page = is_null($request->input("page")) ? 1 : $request->input("page");
         $totalResult = DB::select(DB::raw("select * from (
