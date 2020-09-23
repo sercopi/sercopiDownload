@@ -7,7 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
 
-
+    <!---Basic Bootstrap---->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
         integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 
@@ -22,13 +22,24 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
         integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous">
     </script>
+    <!--------Datatable-------->
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.js">
     </script>
     <script src="{{asset('assets/js/user/manga/versionTable/versionTable.js')}}"></script>
     <script src="{{asset('assets/js/user/manga/searchTable/searchTable.js')}}"> </script>
+    <!-----fontawesome------>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css"
         integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog=="
         crossorigin="anonymous" />
+    <!---MDBOOSTRAP--->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-star-rating/4.0.6/css/star-rating.min.css" media="all"
+        rel="stylesheet" type="text/css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-star-rating/4.0.6/themes/krajee-svg/theme.css"
+        media="all" rel="stylesheet" type="text/css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-star-rating/4.0.6/js/star-rating.min.js"
+        type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-star-rating/4.0.6/themes/krajee-svg/theme.js">
+    </script>
     <style>
         body,
         .list-background {
@@ -103,6 +114,41 @@
         .resource-search-button {
             width: 100px;
         }
+    </style>
+    <style>
+        /*Star rating*/
+
+        .starrating>input {
+            display: none;
+        }
+
+        /* Remove radio buttons */
+
+        .starrating>label star {
+
+            /* Star */
+            margin: 2px;
+            font-size: 8em;
+            font-family: FontAwesome;
+            display: inline-block;
+        }
+
+        .starrating>label {
+            color: rgb(0, 153, 255);
+            /* Start color when not clicked */
+        }
+
+        .starrating>input:checked~label {
+            color: #ffca08;
+        }
+
+        /* Set yellow color when star checked */
+
+        .starrating>input:hover~label {
+            color: rgb(230, 184, 0);
+        }
+
+        /* Set yellow color when star hover */
     </style>
 </head>
 

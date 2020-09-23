@@ -60,6 +60,10 @@ class User extends Authenticatable
     {
         return $this->hasMany("App\Comment");
     }
+    public function ratings()
+    {
+        return $this->hasMany("App\Rating");
+    }
     public function likes()
     {
         return $this->hasMany("App\Like");

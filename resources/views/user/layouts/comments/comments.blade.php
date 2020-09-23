@@ -23,8 +23,8 @@
                     {!!Form::textarea('comment',(isset($userComment)?$userComment->comment:(isset($responseComment)?'':'')),
                     ["rows"=>4,"cols"=>30])
                     !!}
-                    {!!Form::label("rating","Rating:")!!}
-                    {!!Form::number("rating",isset($userComment)?$userComment->rating:'',["min"=>0,"max"=>10])!!}
+                    {{--                     {!!Form::label("rating","Rating:")!!}
+                    {!!Form::number("rating",isset($userComment)?$userComment->rating:'',["min"=>0,"max"=>10])!!} --}}
                     {!!Form::submit("Enviar",["class"=>"btn btn-primary"])!!}
                     {!!Form::close()!!}
                 </div>

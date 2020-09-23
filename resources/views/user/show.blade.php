@@ -21,7 +21,7 @@
             <h1 class="text-info">{{str_replace("-"," ",$resource->name)}}</h1>
         </div>
     </div>
-    @if ($resourceType=="novel") {
+    @if ($resourceType=="novel")
     @include("user.layouts.novel.show",["resource"=>$resource])
     @else
     @include("user.layouts.manga.show",["resource"=>$resource])
@@ -155,9 +155,8 @@
                     .catch(error => console.log(error));
                 })
             })
-            //-----------update & save functions, si no existe el form, porque no se puede comentar
+            //-----------update & save functions
             const form = document.getElementsByClassName("form-comment");
-            if (form[0] !== undefined) {
                 form[0].addEventListener("submit",(event)=>{
                 event.preventDefault();
                 const action = event.target.action;
@@ -174,7 +173,7 @@
                 })
                 .catch(error => console.log(error));
             })
-            }
+            
             //----------response links functions
             Array.from(document.getElementsByClassName("response-button")).forEach((element)=>{
             element.addEventListener("click",(event)=>{

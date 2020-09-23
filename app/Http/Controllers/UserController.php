@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Mail;
 use App\Mangapark;
 use App\Manga;
+use App\Rating;
 use App\Novel;
 use App\Comment;
 use App\Lightnovelworld;
@@ -41,7 +42,32 @@ class UserController extends Controller
         Comment::where("id", 59)->first()->comments()->save($comment);
         return dd(Comment::where("user_id", 1)->where("id", 59)->first()->comments()->get()); */
         //return dd(Comment::where("id", 75)->first()->commentable()->first());
-        return dd(Manga::where("name", "god-among-men-2")->first()->comments()->where("user_id", 1)->where("id", 88)->first());
+        //return dd(Manga::where("name", "god-among-men-2")->first()->comments()->where("user_id", 1)->where("id", 88)->first());
+
+    }
+
+    public function rating($nombre, $resourceType, $resourceName, Request $request)
+    {
+        //de nuevo hay que desmarcar como requeridos los campos que lo asocian al recurso
+
+        switch ($resourceType) {
+            case ("novel"):
+                $resource = Novel::where("name", $resourceName)->first();
+                break;
+            case ("manga"):
+                $resource = Manga::where("name", $resourceName)->first();
+                break;
+            default:
+                abort(404);
+                break;
+        }
+        if ($rating = Auth::user()->ratings()->where("ratingable_id", $resource->id)->first()) {
+            $rating->update(["rating" => $request->input("rating")]);
+        } else {
+            $rating = Auth::user()->ratings()->create(["rating" => $request->input("rating")]);
+        }
+        $resource->ratings()->save($rating);
+        return $resource->updateRating();
     }
 
     /**
@@ -97,7 +123,9 @@ class UserController extends Controller
         $commentsFound = $resource->comments()->get();
         $commented = !is_null(Auth::user()->comments()->where("commentable_id", $resource->id)->first());
         $resource->users()->attach(Auth::user());
-        return view("user.show", compact("resource", "commentsFound", "commented", "resourceType"));
+        $rating = $resource->ratings()->where("user_id", Auth::user()->id)->first();
+        $userRating = $rating ? $rating->rating : null;
+        return view("user.show", compact("resource", "commentsFound", "commented", "resourceType", "userRating"));
     }
 
     /**

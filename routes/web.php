@@ -37,5 +37,6 @@ Route::get("/user/{nombre}/comment/{type}/{resourceName}/edit/{id}", "UserCommen
 Route::get("/user/{nombre}/comment/{id}/like", "UserCommentsController@like");
 Route::get("/user/{nombre}/comment/{id}/dislike", "UserCommentsController@dislike");
 Route::get("/user/{nombre}/{type}/{resourceName}", "UserController@show")->name("show");
+Route::post("/user/{nombre}/rate/{type}/{resourceName}", "UserController@rating");
 Route::get("/user/{nombre}/history", "UserController@history");
 Route::get("/user/{nombre}/test", "UserController@test");

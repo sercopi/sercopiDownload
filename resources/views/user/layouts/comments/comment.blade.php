@@ -61,10 +61,6 @@
             </div>
         </div>
 
-        <br>
-
-        Rating: {{$comment->rating}}
-
         <div>
             Comentario:
             <br>

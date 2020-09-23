@@ -90,7 +90,7 @@ class UserCommentsController extends Controller
         $resource = $this->getResource($resourceType, $resourceName);
         switch ($method) {
             case ("saveResponse"):
-                $comment = Auth::user()->comments()->create(["comment" => $request->input("comment"), "rating" => $request->input("rating")]);
+                $comment = Auth::user()->comments()->create(["comment" => $request->input("comment")]);
                 Comment::where("id", $id)->first()->comments()->save($comment);
                 break;
             case ("responseComment"):
@@ -104,11 +104,11 @@ class UserCommentsController extends Controller
             case ("update"):
                 //al hacer where user primero, nos aseguramos de que no se puedan borrar comentarios de otro usuario por id 
                 $comment = Comment::where("user_id", Auth::user()->id)->where("id", $id)->first();
-                $comment->update(["comment" => $request->input("comment"), "rating" => $request->input("rating")]);
-                $score = DB::select(DB::raw("select CAST(AVG(comments.rating) AS DECIMAL(10,2)) as score from comments join " . $resourceType . "s on comments.commentable_id=" . $resourceType . "s.id where " . $resourceType . "s.name=:resourceName group by " . $resourceType . "s.name"), array(
+                $comment->update(["comment" => $request->input("comment")]);
+                /*  $score = DB::select(DB::raw("select CAST(AVG(comments.rating) AS DECIMAL(10,2)) as score from comments join " . $resourceType . "s on comments.commentable_id=" . $resourceType . "s.id where " . $resourceType . "s.name=:resourceName group by " . $resourceType . "s.name"), array(
                     'resourceName' => $resourceName,
                 ))[0]->score;
-                $comment->update(["score" => $score]);
+                $comment->update(["score" => $score]); */
                 break;
             case ("edit"):
                 $userComment = Comment::where("user_id", Auth::user()->id)->where("id", $id)->first();
@@ -116,12 +116,12 @@ class UserCommentsController extends Controller
             case ("save"):
                 //Nota: he tenido que desmarcar como requeridos commentable type y comment_id para primero
                 //asociar el usuario sin que esos dos campos esten y luego asociar los dos campos
-                $comment = Auth::user()->comments()->create(["comment" => $request->input("comment"), "rating" => $request->input("rating")]);
+                $comment = Auth::user()->comments()->create(["comment" => $request->input("comment")]);
                 $resource->comments()->save($comment);
-                $score = DB::select(DB::raw("select CAST(AVG(comments.rating) AS DECIMAL(10,2)) as score from comments join " . $resourceType . "s on comments.commentable_id=" . $resourceType . "s.id where " . $resourceType . "s.name=:resourceName group by " . $resourceType . "s.name"), array(
+                /* $score = DB::select(DB::raw("select CAST(AVG(comments.rating) AS DECIMAL(10,2)) as score from comments join " . $resourceType . "s on comments.commentable_id=" . $resourceType . "s.id where " . $resourceType . "s.name=:resourceName group by " . $resourceType . "s.name"), array(
                     'resourceName' => $resourceName,
                 ))[0]->score;
-                $resource->update(["score" => $score]);
+                $resource->update(["score" => $score]); */
                 break;
         }
 
