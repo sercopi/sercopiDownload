@@ -10,7 +10,7 @@ class Comment extends Model
     protected $fillable = ["comment", "rating"];
     public function commentable()
     {
-        return $this->morhpTo();
+        return $this->morphTo();
     }
     public function user()
     {

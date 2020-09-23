@@ -4,7 +4,7 @@
 
             @include("user.layouts.comments.commentsFeed",["comments"=>$comments])
 
-            @if(!$commented || isset($userComment))
+
             <div class="row align-content-center">
                 <div class="col-2">
                     <img width="100px" height="100px"
@@ -12,9 +12,16 @@
                     <p>{{Auth::user()->name}}</p>
                 </div>
                 <div class="col-4">
-                    {!!Form::open(["method"=>(isset($userComment)?"put":"post"),"url"=>URL::to("/user/".Auth::user()->name."/comment/".$resourceType."/".$resourceName.(isset($userComment)?"/update":"/save"))])!!}
+                    @if(isset($responseComment))
+                    <p>Response to: {{$responseComment->id}}</p>
+                    @endif
+                    @if(isset($userComment))
+                    <p>Modify: {{$userComment->id}}</p>
+                    @endif
+                    {!!Form::open(["id"=>(isset($userComment)?"update-form":(isset($responseComment)?"response-form":"save-form")),"class"=>"form-comment","method"=>"post","url"=>URL::to("/user/".Auth::user()->name."/comment/".$resourceType."/".$resourceName.(isset($userComment)?"/update/".$userComment->id:(isset($responseComment)?"/saveResponse/".$responseComment->id:"/save")))])!!}
                     {!!Form::label("comment","Texto:")!!}
-                    {!!Form::textarea('comment',isset($userComment)?$userComment->comment:'', ["rows"=>4,"cols"=>30])
+                    {!!Form::textarea('comment',(isset($userComment)?$userComment->comment:(isset($responseComment)?'':'')),
+                    ["rows"=>4,"cols"=>30])
                     !!}
                     {!!Form::label("rating","Rating:")!!}
                     {!!Form::number("rating",isset($userComment)?$userComment->rating:'',["min"=>0,"max"=>10])!!}
@@ -22,7 +29,7 @@
                     {!!Form::close()!!}
                 </div>
             </div>
-            @endif
+
         </div>
     </div>
 </div>

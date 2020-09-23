@@ -37,25 +37,38 @@ class UserCommentsController extends Controller
     {
     }
 
+    public function responseComment($nombre, $resourceType, $resourceName, $id)
+    {
+        $data = $this->handleRequest("responseComment", false, $resourceType, $resourceName, $id);
+        $comments = $data["comments"];
+        $commented = $data["commented"];
+        $responseComment = $data["userComment"];
+        $view =  view("user.layouts.comments.comments", compact("resourceName", "comments", "commented", "resourceType", "responseComment"))->render();
+        return json_encode($view);
+    }
+
     /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function saveComment($nombre, $type, $resourceName, Request $request)
+    public function saveComment($nombre, $resourceType, $resourceName, Request $request)
     {
-        //incluir logica para preguntar si es novela o manga
-        //Nota: he tenido que desmarcar como requeridos commentable type y comment_id para primero
-        //asociar el usuario sin que esos dos campos esten y luego asociar los dos campos
-        $comment = Auth::user()->comments()->create(["comment" => $request->input("comment"), "rating" => $request->input("rating")]);
-        $resource = ($type == "manga") ? Manga::where("name", $resourceName)->first() : Novel::where("name", $resourceName)->first();
-        $resource->comments()->save($comment);
-        $score = DB::select(DB::raw("select CAST(AVG(comments.rating) AS DECIMAL(10,2)) as score from comments join " . $type . "s on comments.commentable_id=" . $type . "s.id where " . $type . "s.name=:resourceName group by " . $type . "s.name"), array(
-            'resourceName' => $resourceName,
-        ))[0]->score;
-        $resource->update(["score" => $score]);
-        return redirect()->route("show", ["nombre" => Auth::user()->name, "type" => $type, "resourceName" => $resourceName]);
+        $data = $this->handleRequest("save", $request, $resourceType, $resourceName);
+        $comments = $data["comments"];
+        $commented = $data["commented"];
+        $view =  view("user.layouts.comments.comments", compact("resourceName", "comments", "commented", "resourceType"))->render();
+        return json_encode($view);
+    }
+
+    public function saveResponseComment($nombre, $resourceType, $resourceName, $id, Request $request)
+    {
+        $data = $this->handleRequest("saveResponse", $request, $resourceType, $resourceName, $id);
+        $comments = $data["comments"];
+        $commented = $data["commented"];
+        $view =  view("user.layouts.comments.comments", compact("resourceName", "comments", "commented", "resourceType"))->render();
+        return json_encode($view);
     }
 
     /**
@@ -64,9 +77,76 @@ class UserCommentsController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function showComment($nombre, $resourceType, $resourceName)
     {
-        //
+        $data = $this->handleRequest("show", false, $resourceType, $resourceName);
+        $comments = $data["comments"];
+        $commented = $data["commented"];
+        $view = view("user.layouts.comments.comments", compact("comments", "commented", "resourceType", "resourceName"))->render();
+        return json_encode($view);
+    }
+    function handleRequest($method, $request = false, $resourceType, $resourceName, $id = false)
+    {
+        $resource = $this->getResource($resourceType, $resourceName);
+        switch ($method) {
+            case ("saveResponse"):
+                $comment = Auth::user()->comments()->create(["comment" => $request->input("comment"), "rating" => $request->input("rating")]);
+                Comment::where("id", $id)->first()->comments()->save($comment);
+                break;
+            case ("responseComment"):
+                $userComment = comment::where("id", $id)->first();
+                break;
+            case ("show"):
+                break;
+            case ("delete"):
+                Comment::where("user_id", Auth::user()->id)->where("id", $id)->first()->delete();
+                break;
+            case ("update"):
+                //al hacer where user primero, nos aseguramos de que no se puedan borrar comentarios de otro usuario por id 
+                $comment = Comment::where("user_id", Auth::user()->id)->where("id", $id)->first();
+                $comment->update(["comment" => $request->input("comment"), "rating" => $request->input("rating")]);
+                $score = DB::select(DB::raw("select CAST(AVG(comments.rating) AS DECIMAL(10,2)) as score from comments join " . $resourceType . "s on comments.commentable_id=" . $resourceType . "s.id where " . $resourceType . "s.name=:resourceName group by " . $resourceType . "s.name"), array(
+                    'resourceName' => $resourceName,
+                ))[0]->score;
+                $comment->update(["score" => $score]);
+                break;
+            case ("edit"):
+                $userComment = Comment::where("user_id", Auth::user()->id)->where("id", $id)->first();
+                break;
+            case ("save"):
+                //Nota: he tenido que desmarcar como requeridos commentable type y comment_id para primero
+                //asociar el usuario sin que esos dos campos esten y luego asociar los dos campos
+                $comment = Auth::user()->comments()->create(["comment" => $request->input("comment"), "rating" => $request->input("rating")]);
+                $resource->comments()->save($comment);
+                $score = DB::select(DB::raw("select CAST(AVG(comments.rating) AS DECIMAL(10,2)) as score from comments join " . $resourceType . "s on comments.commentable_id=" . $resourceType . "s.id where " . $resourceType . "s.name=:resourceName group by " . $resourceType . "s.name"), array(
+                    'resourceName' => $resourceName,
+                ))[0]->score;
+                $resource->update(["score" => $score]);
+                break;
+        }
+
+        return [
+            "resource" => $resource,
+            "userComment" => ($method == "edit"  || $method == "responseComment") ? $userComment : null,
+            "comments" => $resource->comments()->get(),
+            "commented" => !is_null(Auth::user()->comments()->where("commentable_id", $resource->id)->first())
+        ];
+    }
+    function getResource($resourceType, $resourceName, $id = false)
+    {
+        switch ($resourceType) {
+
+            case ("manga"):
+                $resource = Manga::where("name", $resourceName)->first();
+                break;
+            case ("novel");
+                $resource = Novel::where("name", $resourceName)->first();
+                break;
+            default:
+                abort(404);
+                break;
+        }
+        return $resource;
     }
 
     /**
@@ -75,26 +155,14 @@ class UserCommentsController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function editComment($nombre, $type, $resourceName)
+    public function editComment($nombre, $resourceType, $resourceName, $id)
     {
-        //codigo repetido en usercontroller, lo que nos esta diciendo que se 
-        //debe de sacar a un servicio externo UserService, junto con otros.
-        switch ($type) {
-            case "manga":
-                $resource = Manga::Where($type . "s.name", $resourceName)->first();
-                break;
-            case "novel":
-                $resource = Novel::Where($type . "s.name", $resourceName)->first();
-                break;
-            default:
-                abort(404);
-                break;
-        }
-        $userComment = $resource->comments()->where("user_id", Auth::user()->id)->first();
-        $commentsFound = $resource->comments()->where("user_id", "!=", Auth::user()->id)->get();
-        $commented = !is_null(Auth::user()->comments()->where("commentable_id", $resource->id)->first());
-        $resourceType = $type;
-        return view("user.show", compact("resource", "commentsFound", "commented", "resourceType", "userComment"));
+        $data = $this->handleRequest("edit", false, $resourceType, $resourceName, $id);
+        $comments = $data["comments"];
+        $commented = $data["commented"];
+        $userComment = $data["userComment"];
+        $view =  view("user.layouts.comments.comments", compact("resourceName", "comments", "commented", "resourceType", "userComment"))->render();
+        return json_encode($view);
     }
 
     /**
@@ -104,25 +172,13 @@ class UserCommentsController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function updateComment($nombre, $type, $resourceName, Request $request)
+    public function updateComment($nombre, $resourceType, $resourceName, $id, Request $request)
     {
-        switch ($type) {
-            case "manga":
-                $resource = Manga::Where($type . "s.name", $resourceName)->first();
-                break;
-            case "novel":
-                $resource = Novel::Where($type . "s.name", $resourceName)->first();
-                break;
-            default:
-                abort(404);
-                break;
-        }
-        $resource->comments()->where("user_id", Auth::user()->id)->first()->update(["comment" => $request->input("comment"), "rating" => $request->input("rating")]);
-        $score = DB::select(DB::raw("select CAST(AVG(comments.rating) AS DECIMAL(10,2)) as score from comments join " . $type . "s on comments.commentable_id=" . $type . "s.id where " . $type . "s.name=:resourceName group by " . $type . "s.name"), array(
-            'resourceName' => $resourceName,
-        ))[0]->score;
-        $resource->update(["score" => $score]);
-        return redirect()->route("show", ["nombre" => Auth::user()->name, "type" => $type, "resourceName" => $resourceName]);
+        $data = $this->handleRequest("update", $request, $resourceType, $resourceName, $id);
+        $comments = $data["comments"];
+        $commented = $data["commented"];
+        $view =  view("user.layouts.comments.comments", compact("resourceName", "comments", "commented", "resourceType"))->render();
+        return json_encode($view);
     }
 
     /**
@@ -131,32 +187,24 @@ class UserCommentsController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function deleteComment($nombre, $type, $resourceName)
+    public function deleteComment($nombre, $resourceType, $resourceName, $id)
     {
-        switch ($type) {
-            case "manga":
-                $resource = Manga::Where($type . "s.name", $resourceName)->first();
-                break;
-            case "novel":
-                $resource = Novel::Where($type . "s.name", $resourceName)->first();
-                break;
-            default:
-                abort(404);
-                break;
-        }
-        $resource->comments()->where("user_id", Auth::user()->id)->first()->delete();
-        return redirect()->route("show", ["nombre" => Auth::user()->name, "type" => $type, "resourceName" => $resourceName]);
+        $data = $this->handleRequest("delete", false, $resourceType, $resourceName, $id);
+        $comments = $data["comments"];
+        $commented = $data["commented"];
+        $view =  view("user.layouts.comments.comments", compact("resourceName", "comments", "commented", "resourceType"))->render();
+        return json_encode($view);
     }
     public function like($nombre, $id, Request $request)
     {
         $like = Like::where("user_id", Auth::user()->id)->where("comment_id", $id)->first();
         is_null($like) ? Like::create(["user_id" => Auth::user()->id, "comment_id" => $id, "like" => 1]) : $like->update(["like" => $like->like > 0 ? 0 : 1]);
-        return response("", 200);
+        return response("liked", 200);
     }
     public function dislike($nombre, $id, Request $request)
     {
         $like = Like::where("user_id", Auth::user()->id)->where("comment_id", $id)->first();
         is_null($like) ? Like::create(["user_id" => Auth::user()->id, "comment_id" => $id, "like" => -1]) : $like->update(["like" => $like->like < 0 ? 0 : -1]);
-        return response("", 200);
+        return response("disliked", 200);
     }
 }

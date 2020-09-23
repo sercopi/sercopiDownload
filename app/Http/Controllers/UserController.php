@@ -26,7 +26,7 @@ class UserController extends Controller
         $this->middleware("user");
     }
 
-    public function email($nombre)
+    public function test($nombre)
     {
         /* $data = ["name" => "sergio", "body" => "prueba"];
         Mail::send("mails.mail", $data, function ($message) {
@@ -37,7 +37,11 @@ class UserController extends Controller
         /* DownloadResource::dispatch("prueba queue", "sergiiosercopi@gmail.com");
         echo "job set"; */
         /* dd(Manga::where("name", "god-among-men-2")->first()->comments()->where("id", 59)->first()->likes()->select(DB::raw('SUM(likes.like) as total'))->get()->first()->total); */
-        dd(Comment::where("user_id", 1)->where("id", 59)->first()->comments()->get());
+        /* $comment = Auth::user()->comments()->create(["rating" => 2, "comment" => "example"]);
+        Comment::where("id", 59)->first()->comments()->save($comment);
+        return dd(Comment::where("user_id", 1)->where("id", 59)->first()->comments()->get()); */
+        //return dd(Comment::where("id", 75)->first()->commentable()->first());
+        return dd(Manga::where("name", "god-among-men-2")->first()->comments()->where("user_id", 1)->where("id", 88)->first());
     }
 
     /**
