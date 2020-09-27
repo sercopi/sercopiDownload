@@ -71,6 +71,7 @@ class Lightnovelworld extends Scrapper
         for ($i = $from; $i <= $to; $i++) {
             $chapterURL = $this->baseURL1 . $seriesInfo["name"] . "/chapter-" . $i;
             $seriesInfo["chapters"][] = $this->getChapter($chapterURL);
+            echo "gotten chapter: " . $i . PHP_EOL;
         }
         return $seriesInfo;
     }
@@ -82,9 +83,20 @@ class Lightnovelworld extends Scrapper
         $xpath = new \DOMXPath($doc);
         $chapter = [];
         $chapterContent = "";
-        $contentLines = $xpath->query("/html/body/main/article/section[1]/div[2]/p");
-        foreach ($contentLines as $contentLine) {
-            $chapterContent .= "<p>" . $contentLine->nodeValue . "</p>";
+        $textGlobalContainer = $xpath->query("/html/body/main/article/section[1]/div[2]")->item(0);
+        if (!is_null($textGlobalContainer)) {
+            $textGlobalDivs = $xpath->query("./div", $textGlobalContainer);
+            foreach ($textGlobalDivs as $div) {
+                $textGlobalContainer->removeChild($div);
+            }
+            $textGlobalSpans = $xpath->query("./span", $textGlobalContainer);
+            foreach ($textGlobalSpans as $span) {
+                $textGlobalContainer->removeChild($span);
+            }
+            $chapterContent =  $textGlobalContainer->C14N();
+            $patrones = ['<div class="chapter-content">', '</div>', '<br></br>', "<p>", '</p>'];
+            $sustituciones = ["", "", "\n\n", "", "\n\n"];
+            $chapterContent =  str_replace($patrones, $sustituciones, $chapterContent);
         }
         $chapter["content"] = $chapterContent;
         $title = $xpath->query("/html/body/main/article/header/div/div/h2")->item(0);

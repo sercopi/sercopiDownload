@@ -65,6 +65,10 @@ class InsertarNovelas extends Comunicacion
         $stmtGetLastChapter = $this->oConn->prepare("select count(novels.id) as capitulos from novels join novel_chapters on novels.id = novel_chapters.novel_id where novels.name=?");
         try {
             $stmtGetLastChapter->execute([$name]);
+            $chapters = $stmtGetLastChapter->fetchAll();
+            if (!$chapters) {
+                return 0;
+            }
             return $stmtGetLastChapter->fetchAll()[0]["capitulos"];
         } catch (PDOException $error) {
             echo $error->getMessage();
