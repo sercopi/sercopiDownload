@@ -24,8 +24,9 @@
         <a class="dropdown-item" href="#">Something else here</a>
       </div>
     </li>
+
     <li class="nav-item">
-      <a class="nav-link disabled" href="#">Disabled</a>
+      <a class="nav-link disabled" href={{URL::to("/user/".Auth::user()->name."/follow")}}>follows</a>
     </li>
   </ul>
   <form class="form-inline my-2 my-lg-0">

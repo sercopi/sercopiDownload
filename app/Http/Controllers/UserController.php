@@ -14,10 +14,12 @@ use App\Mangapark;
 use App\Manga;
 use App\Rating;
 use App\Novel;
+use App\Follow;
 use App\Comment;
 use App\Lightnovelworld;
 use App\Mail\EmailForDownloadQueue;
 use App\Jobs\DownloadResource;
+use App\Mangas_update_history;
 
 class UserController extends Controller
 {
@@ -43,7 +45,78 @@ class UserController extends Controller
         return dd(Comment::where("user_id", 1)->where("id", 59)->first()->comments()->get()); */
         //return dd(Comment::where("id", 75)->first()->commentable()->first());
         //return dd(Manga::where("name", "god-among-men-2")->first()->comments()->where("user_id", 1)->where("id", 88)->first());
+        /*         return dd(Comment::where("user_id", Auth::user()->id)->where("id", 99)->first()->delete());*/
+        //return dd(Manga::where("id", 600)->first()->manga_rating_history()->get());
 
+        $recentUpdates = DB::select(DB::raw("
+        select * from (
+            select 'manga' as resourceType,mangas.name,mangas.imageInfo,tabla.chapters_introduced,tabla.created_at
+            from (
+                (SELECT o.*
+                FROM `mangas_update_history` o                
+                LEFT JOIN `mangas_update_history` b          
+                  ON o.manga_id = b.manga_id AND o.created_at < b.created_at
+                WHERE b.created_at is NULL) tabla 
+                join mangas on mangas.id = tabla.manga_id
+                join follows on follows.followable_id = mangas.id 
+                AND follows.follow=1 
+                AND follows.user_id=:userIDmanga
+                AND follows.followable_type=:mangaType
+            ) 
+            UNION ALL 
+            select 'novel' as resourceType,novels.name,novels.imageInfo,tabla.chapters_introduced,tabla.created_at
+            from (
+                (SELECT o.*
+                FROM `novels_update_history` o                
+                LEFT JOIN `novels_update_history` b          
+                  ON o.novel_id = b.novel_id AND o.created_at < b.created_at
+                WHERE b.created_at is NULL) tabla 
+                join novels on novels.id = tabla.novel_id
+                join follows on follows.followable_id = novels.id 
+                AND follows.follow=1 
+                AND follows.user_id=:userIDnovel
+                AND follows.followable_type=:novelType
+            ) 
+        ) final
+        "), ["userIDmanga" => Auth::user()->id, "userIDnovel" => Auth::user()->id, "mangaType" => "App\Manga", "novelType" => "App\novel"]);
+        return dd($recentUpdates);
+    }
+
+    public function follow($nombre, $resourceType, $resourceName, Request $request)
+    {
+        switch ($resourceType) {
+            case ("novel"):
+                $resource = Novel::where("name", $resourceName)->first();
+                break;
+            case ("manga"):
+                $resource = Manga::where("name", $resourceName)->first();
+                break;
+            default:
+                abort(404);
+                break;
+        }
+        $follow = $resource->follows()->where("user_id", Auth::user()->id)->first();
+        if (!is_null($request->input("follow"))) {
+            if (!is_null($follow)) {
+                $follow->update(["follow" => $follow->follow ? 0 : 1, "notifications" => 0]);
+                return response("", 200);
+            }
+            //de nuevo desmarcar los campos followable_type y followable_id
+            $newFollow = Auth::user()->follows()->create(["follow" => 1, "notifications" => 0]);
+            $resource->follows()->save($newFollow);
+            return response("", 200);
+        }
+        if (!is_null($request->input("notifications"))) {
+            if (!is_null($follow)) {
+                $follow->update(["follow" => 1, "notifications" => $follow->notifications ? 0 : 1]);
+                return response("", 200);
+            }
+            //de nuevo desmarcar los campos followable_type y followable_id
+            $newFollow = Auth::user()->follows()->create(["follow" => 1, "notifications" => 1]);
+            $resource->follows()->save($newFollow);
+            return response("", 200);
+        }
+        return abort(400);
     }
 
     public function rating($nombre, $resourceType, $resourceName, Request $request)
@@ -96,8 +169,78 @@ class UserController extends Controller
             $twentyBestRated = $twentyBestRated->merge($randoms);
         }
         $twentyLastAdded = Manga::orderBy("created_at", "DESC")->limit(20)->get();
-        return view("user.index", compact("twentyMostPopular", "twentyBestRated", "twentyLastAdded"));
+        //most recent updates of both resource types followed by the user
+        $recentUpdates = DB::select(DB::raw("
+        select * from (
+            select 'manga' as resourceType,mangas.name,mangas.imageInfo,tabla.chapters_introduced,tabla.created_at
+            from (
+                (SELECT o.*
+                FROM `mangas_update_history` o                
+                LEFT JOIN `mangas_update_history` b          
+                  ON o.manga_id = b.manga_id AND o.created_at < b.created_at
+                WHERE b.created_at is NULL) tabla 
+                join mangas on mangas.id = tabla.manga_id
+                join follows on follows.followable_id = mangas.id 
+                AND follows.follow=1 
+                AND follows.user_id=:userIDmanga
+                AND follows.followable_type=:mangaType
+            ) 
+            UNION ALL 
+            select 'novel' as resourceType,novels.name,novels.imageInfo,tabla.chapters_introduced,tabla.created_at
+            from (
+                (SELECT o.*
+                FROM `novels_update_history` o                
+                LEFT JOIN `novels_update_history` b          
+                  ON o.novel_id = b.novel_id AND o.created_at < b.created_at
+                WHERE b.created_at is NULL) tabla 
+                join novels on novels.id = tabla.novel_id
+                join follows on follows.followable_id = novels.id 
+                AND follows.follow=1 
+                AND follows.user_id=:userIDnovel
+                AND follows.followable_type=:novelType
+            ) 
+        ) final
+        "), ["userIDmanga" => Auth::user()->id, "userIDnovel" => Auth::user()->id, "mangaType" => "App\Manga", "novelType" => "App\novel"]);
+
+        return view("user.index", compact("recentUpdates", "twentyMostPopular", "twentyBestRated", "twentyLastAdded"));
     }
+    public function followsView($nombre, Request $request)
+    {
+        return view("user.follows");
+    }
+
+    public function allFollows($nombre, Request $request)
+    {
+        $mangas = Manga::join("follows", function ($join) {
+            $join->where("followable_type", "=", "App\Manga");
+            $join->where("follow", "=", 1);
+            $join->where("user_id", "=", Auth::user()->id);
+            $join->on("followable_id", "=", "mangas.id");
+        })->get();
+
+        $currentPage = is_null($request->input("pageManga")) ? 1 : $request->input("pageManga");
+        $totalPages = ceil($mangas->count() / 5);
+        $baseURL = "http://172.17.0.2/sercopiDownload/public/user/" . Auth::user()->name . "/followFeed?pageManga=";
+        $resources = $mangas->skip(($currentPage - 1) * 5)->take(5);
+        $resourceType = "manga";
+        $viewManga =  view("user.layouts.followsFeed", compact("resourceType", "resources", "currentPage", "totalPages", "baseURL"))->render();
+
+        $novels = Novel::join("follows", function ($join) {
+            $join->where("followable_type", "=", "App\Novel");
+            $join->where("follow", "=", 1);
+            $join->where("user_id", "=", Auth::user()->id);
+            $join->on("followable_id", "=", "novels.id");
+        })->get();
+        $pageNovel = is_null($request->input("pageNovel")) ? 1 : $request->input("pageNovel");
+        $totalPages = ceil($novels->count() / 5);
+        $resourceType = "novel";
+        $baseURL = "http://172.17.0.2/sercopiDownload/public/user/" . Auth::user()->name . "/followFeed?pageNovel=";
+        $resources = $novels->skip(($currentPage - 1) * 5)->take(5);
+        $resourceType = "novel";
+        $viewNovel =  view("user.layouts.followsFeed", compact("resourceType", "resources", "currentPage", "totalPages", "baseURL"))->render();
+        return json_encode("<h2>Mangas</h2>" . $viewManga . "<hr><h2>Novels</h2>" . $viewNovel);
+    }
+
 
     /**
      * Store a newly created resource in storage.
@@ -123,9 +266,7 @@ class UserController extends Controller
         $commentsFound = $resource->comments()->get();
         $commented = !is_null(Auth::user()->comments()->where("commentable_id", $resource->id)->first());
         $resource->users()->attach(Auth::user());
-        $rating = $resource->ratings()->where("user_id", Auth::user()->id)->first();
-        $userRating = $rating ? $rating->rating : null;
-        return view("user.show", compact("resource", "commentsFound", "commented", "resourceType", "userRating"));
+        return view("user.show", compact("resource", "commentsFound", "commented", "resourceType"));
     }
 
     /**

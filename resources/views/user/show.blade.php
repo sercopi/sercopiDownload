@@ -130,8 +130,10 @@
             })
             //-----delete functions
             Array.from(document.getElementsByClassName("delete-button")).forEach((element)=>{
+                const form = document.getElementById("delete-"+element.dataset.id);
                 element.addEventListener("click",(event)=>{
-                    const form = document.getElementById("delete-"+event.target.dataset.id);       
+                    console.log(form);
+                    console.log(element.dataset.id);       
                     fetch(form.action, {
                     method: 'POST',
                     body: new FormData(form)

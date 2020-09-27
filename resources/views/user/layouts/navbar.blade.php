@@ -25,7 +25,7 @@
               </div>
             </li>
 
-            <li class="nav-item active">
+            <li class="nav-item">
               <a class="nav-link" href={{URL::to("/user/".Auth::user()->name.'/history')}}>History</a>
             </li>
             <li class="nav-item">
@@ -34,9 +34,8 @@
             <li class="nav-item">
               <a class="nav-link" href={{URL::to("/user/".Auth::user()->name."/advancedSearch")}}>Advanced Search</a>
             </li>
-
             <li class="nav-item">
-              <a class="nav-link disabled" href="#">Disabled</a>
+              <a class="nav-link" href={{URL::to("/user/".Auth::user()->name."/follows")}}>follows</a>
             </li>
           </ul>
           <form method="GET" action="{{URL::to('user/'.Auth::user()->name.'/search')}}" class="form-inline ">

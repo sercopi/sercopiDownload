@@ -39,4 +39,7 @@ Route::get("/user/{nombre}/comment/{id}/dislike", "UserCommentsController@dislik
 Route::get("/user/{nombre}/{type}/{resourceName}", "UserController@show")->name("show");
 Route::post("/user/{nombre}/rate/{type}/{resourceName}", "UserController@rating");
 Route::get("/user/{nombre}/history", "UserController@history");
+Route::post("/user/{nombre}/follow/{type}/{resourceName}", "UserController@follow");
+Route::get("/user/{nombre}/followFeed", "UserController@allFollows");
+Route::get("/user/{nombre}/follows", "UserController@followsView");
 Route::get("/user/{nombre}/test", "UserController@test");

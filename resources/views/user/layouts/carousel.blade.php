@@ -10,7 +10,7 @@
                                 height="350px;" width="75px;" alt="image">
                             <div class="card-body">
                                 <h5 class="card-title">
-                                    {{str_replace("-"," ",\Illuminate\Support\Str::limit($batchSlice->name, $limit = 20, $end = '...'))}}
+                                    {{str_replace("-"," ",\Illuminate\Support\Str::limit($batchSlice->name, $limit = 15, $end = '...'))}}
                                 </h5>
 
                             </div>

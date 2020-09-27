@@ -76,7 +76,8 @@
         .carousel-control-prev:hover,
         .carousel-control-next:hover {
             background-color: lightseagreen;
-            opacity: 0.15;
+            border: 2px solid ghostwhite;
+            opacity: 0.30;
         }
 
         .carousel {
@@ -149,6 +150,19 @@
         }
 
         /* Set yellow color when star hover */
+    </style>
+    <style>
+        .notify-badge {
+            position: absolute;
+            right: -20px;
+            top: 10px;
+            background: rgb(0, 102, 255);
+            text-align: center;
+            border-radius: 30px 30px 30px 30px;
+            color: white;
+            padding: 5px 10px;
+            font-size: 20px;
+        }
     </style>
 </head>
 
