@@ -32,6 +32,10 @@
 <hr>
 <div class="row justify-content-center">
     <div class="col">
+        @if (!is_null(json_decode($resource->chapters,true)))
         @include("user.layouts.manga.versions",["versions"=>json_decode($resource->chapters,true),"resourceName"=>$resource->name,"type"=>"manga"])
+        @else
+        No chapters
+        @endif
     </div>
 </div>

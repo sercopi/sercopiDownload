@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Mail;
 use App\Mangapark;
@@ -163,46 +164,52 @@ class UserController extends Controller
             $randoms = Manga::limit(20 - count($twentyMostPopular))->get();
             $twentyMostPopular = $twentyMostPopular->merge($randoms);
         }
-        $twentyBestRated = Manga::orderBy("score", "DESC")->limit(20)->get();
-        if (count($twentyBestRated) < 20) {
-            $randoms = Manga::limit(20 - count($twentyBestRated))->get();
-            $twentyBestRated = $twentyBestRated->merge($randoms);
-        }
+
         $twentyLastAdded = Manga::orderBy("created_at", "DESC")->limit(20)->get();
+
+
+        return view("user.index", compact("twentyMostPopular", "twentyLastAdded"));
+    }
+    public function followsUpdates($nombre, Request $request)
+    {
         //most recent updates of both resource types followed by the user
         $recentUpdates = DB::select(DB::raw("
-        select * from (
-            select 'manga' as resourceType,mangas.name,mangas.imageInfo,tabla.chapters_introduced,tabla.created_at
-            from (
-                (SELECT o.*
-                FROM `mangas_update_history` o                
-                LEFT JOIN `mangas_update_history` b          
-                  ON o.manga_id = b.manga_id AND o.created_at < b.created_at
-                WHERE b.created_at is NULL) tabla 
-                join mangas on mangas.id = tabla.manga_id
-                join follows on follows.followable_id = mangas.id 
-                AND follows.follow=1 
-                AND follows.user_id=:userIDmanga
-                AND follows.followable_type=:mangaType
-            ) 
-            UNION ALL 
-            select 'novel' as resourceType,novels.name,novels.imageInfo,tabla.chapters_introduced,tabla.created_at
-            from (
-                (SELECT o.*
-                FROM `novels_update_history` o                
-                LEFT JOIN `novels_update_history` b          
-                  ON o.novel_id = b.novel_id AND o.created_at < b.created_at
-                WHERE b.created_at is NULL) tabla 
-                join novels on novels.id = tabla.novel_id
-                join follows on follows.followable_id = novels.id 
-                AND follows.follow=1 
-                AND follows.user_id=:userIDnovel
-                AND follows.followable_type=:novelType
-            ) 
-        ) final
-        "), ["userIDmanga" => Auth::user()->id, "userIDnovel" => Auth::user()->id, "mangaType" => "App\Manga", "novelType" => "App\novel"]);
-
-        return view("user.index", compact("recentUpdates", "twentyMostPopular", "twentyBestRated", "twentyLastAdded"));
+select * from (
+    select 'manga' as resourceType,mangas.name,mangas.imageInfo,tabla.chapters_introduced,tabla.created_at
+    from (
+        (SELECT o.*
+        FROM `mangas_update_history` o                
+        LEFT JOIN `mangas_update_history` b          
+          ON o.manga_id = b.manga_id AND o.created_at < b.created_at
+        WHERE b.created_at is NULL) tabla 
+        join mangas on mangas.id = tabla.manga_id
+        join follows on follows.followable_id = mangas.id 
+        AND follows.follow=1 
+        AND follows.user_id=:userIDmanga
+        AND follows.followable_type=:mangaType
+    ) 
+    UNION ALL 
+    select 'novel' as resourceType,novels.name,novels.imageInfo,tabla.chapters_introduced,tabla.created_at
+    from (
+        (SELECT o.*
+        FROM `novels_update_history` o                
+        LEFT JOIN `novels_update_history` b          
+          ON o.novel_id = b.novel_id AND o.created_at < b.created_at
+        WHERE b.created_at is NULL) tabla 
+        join novels on novels.id = tabla.novel_id
+        join follows on follows.followable_id = novels.id 
+        AND follows.follow=1 
+        AND follows.user_id=:userIDnovel
+        AND follows.followable_type=:novelType
+    ) 
+) final
+"), ["userIDmanga" => Auth::user()->id, "userIDnovel" => Auth::user()->id, "mangaType" => "App\Manga", "novelType" => "App\novel"]);
+        $recentUpdates = Collection::make($recentUpdates);
+        $currentPage = is_null($request->input("page")) ? 1 : $request->input("page");
+        $totalPages = ceil($recentUpdates->count() / 28);
+        $baseURL = URL::to("user/" . Auth::user()->name . "/followsUpdates?page=");
+        $recentUpdates = $recentUpdates->skip(($currentPage - 1) * 28)->take(28);
+        return json_encode(view("user.layouts.followsUpdates", compact("recentUpdates", "baseURL", "totalPages", "currentPage"))->render());
     }
     public function followsView($nombre, Request $request)
     {
@@ -305,7 +312,7 @@ class UserController extends Controller
                 $resources = Manga::Where('name', 'like', $resourceName . '%');
                 break;
             case "novel":
-                $resources = Novel::Where("name", "like",  $resourceName . "%");
+                $resources = Novel::Where("name", "like", $resourceName . "%");
                 break;
         }
         if ($additionalParams) {

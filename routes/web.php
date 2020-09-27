@@ -42,4 +42,5 @@ Route::get("/user/{nombre}/history", "UserController@history");
 Route::post("/user/{nombre}/follow/{type}/{resourceName}", "UserController@follow");
 Route::get("/user/{nombre}/followFeed", "UserController@allFollows");
 Route::get("/user/{nombre}/follows", "UserController@followsView");
+Route::get("/user/{nombre}/followsUpdates", "UserController@followsUpdates");
 Route::get("/user/{nombre}/test", "UserController@test");
