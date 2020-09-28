@@ -165,9 +165,9 @@ class Mangapark extends scrapper
         $seriesInfoByPage = [];
         for ($pageNumber = 1; $pageNumber <= $pagesLength; $pageNumber++) {
             $result = $this->getAllMangasInPageByGenre($urlFinal . "&page=" . $pageNumber);
-            if ($result) {
-                $seriesInfoByPage[] = $result;
-            }
+            if (empty($result)) break;
+            $seriesInfoByPage[] = $result;
+            echo "page " . $pageNumber . " obtained" . PHP_EOL;
         }
         // ob_flush();
         // ob_start();
@@ -181,7 +181,7 @@ class Mangapark extends scrapper
         $doc = new \DOMDocument("1.0", "utf-8");
         @$doc->loadHTML($html);
         $xpath = new \DOMXPath($doc);
-        $mangaLinks = $xpath->query("/html/body/section/div/div[3]/div[@class='item']//a[@class='cover']");
+        $mangaLinks = $xpath->query("/html/body/section/div/div[3]/div[contains(@class,'item')]//a[contains(@class,'cover')]");
         $seriesInfoTotal = [];
         foreach ($mangaLinks as $mangaLink) {
             $link = $mangaLink->getAttribute("href");
@@ -204,5 +204,11 @@ class Mangapark extends scrapper
             $genresParsed[] = str_replace(" ", "-", strtolower($genre->nodeValue));
         }
         return $genresParsed;
+    }
+    public function getAllMangasInGeneral()
+    {
+    }
+    public function getAllMangasInPageInGeneral()
+    {
     }
 }

@@ -44,3 +44,4 @@ Route::get("/user/{nombre}/followFeed", "UserController@allFollows");
 Route::get("/user/{nombre}/follows", "UserController@followsView");
 Route::get("/user/{nombre}/followsUpdates", "UserController@followsUpdates");
 Route::get("/user/{nombre}/test", "UserController@test");
+Route::post("/user/{nombre}/testPOST", "UserController@testPOST")->name("upload");

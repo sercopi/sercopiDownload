@@ -3,6 +3,8 @@
 @include("user.layouts.navbar")
 @endsection
 @section("contenido")
+<script src="https://cdn.ckeditor.com/ckeditor5/22.0.0/classic/ckeditor.js"></script>
+
 <div class="container">
     @if (Session::has("error"))
     <div class="alert alert-danger" role="alert">
@@ -32,7 +34,21 @@
         </div>
     </div>
     <script>
-        const domModified = () => {
+        let ckeditor;
+        const domModified = (json) => {
+            document.getElementsByClassName("comments-container")[0].innerHTML="";
+            
+              document.getElementsByClassName("comments-container")[0].innerHTML=json;
+            //--------set up ckeditor
+            data = document.getElementsByClassName("comments-container")[0];
+            const scriptContainer = document.createElement("div");
+            Array.from(data.getElementsByTagName("script")).forEach((script)=>{
+                const newScript = document.createElement("script");
+                newScript.innerHTML=script.innerHTML;
+                scriptContainer.appendChild(newScript);
+            })
+            data.appendChild(scriptContainer);
+
             //--------------Likes Functions
             Array.from(document.getElementsByClassName("comment-block")).forEach(
                 element => {
@@ -119,10 +135,8 @@
                     attributes: true
                     //...
                 });*/
-                document.getElementsByClassName("comments-container")[0].innerHTML="";
-            
-              document.getElementsByClassName("comments-container")[0].innerHTML=json;
-              domModified();
+                
+              domModified(json);
               window.scrollTo(0, document.documentElement.scrollTop || document.body.scrollTop)
             })
             .catch(error => console.log(error));
@@ -149,10 +163,8 @@
                     attributes: true
                     //...
                 });*/
-                    document.getElementsByClassName("comments-container")[0].innerHTML="";
-            
-                    document.getElementsByClassName("comments-container")[0].innerHTML=json;
-                    domModified();
+
+                    domModified(json);
                     })
                     .catch(error => console.log(error));
                 })
@@ -161,17 +173,17 @@
             const form = document.getElementsByClassName("form-comment");
                 form[0].addEventListener("submit",(event)=>{
                 event.preventDefault();
+                const formData= new FormData(event.target)
+                formData.append("comment",ckeditor.getData())
                 const action = event.target.action;
                 fetch(event.target.action, {
                     method: "POST",
-                    body: new FormData(event.target)
+                    body: formData
                 })
                 .then((response)=>response.json())
                 .then(json => {
-                        document.getElementsByClassName("comments-container")[0].innerHTML="";
-            
-                        document.getElementsByClassName("comments-container")[0].innerHTML=json;
-                        domModified();
+
+                        domModified(json);
                 })
                 .catch(error => console.log(error));
             })
@@ -193,10 +205,8 @@
                     attributes: true
                     //...
                 });*/
-                document.getElementsByClassName("comments-container")[0].innerHTML="";
-            
-              document.getElementsByClassName("comments-container")[0].innerHTML=json;
-              domModified();
+
+              domModified(json);
               window.scrollTo(0, document.documentElement.scrollTop || document.body.scrollTop)
             })
             .catch(error => console.log(error));
@@ -219,10 +229,8 @@
                     attributes: true
                     //...
                 });*/
-                document.getElementsByClassName("comments-container")[0].innerHTML="";
-            
-              document.getElementsByClassName("comments-container")[0].innerHTML=json;
-              domModified();
+
+              domModified(json);
             })
             .catch(error => console.log(error));
             };

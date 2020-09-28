@@ -67,7 +67,7 @@
             @if(isset($parent))
             <b><i>>>>{{$comment->commentable()->first()->user->name}}</i></b>
             @endif
-            {{$comment->comment}}
+            {!!$comment->comment!!}
         </div>
         <div>
             <p><i>created at: {{$comment->created_at}}</i></p>

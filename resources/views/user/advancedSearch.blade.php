@@ -33,9 +33,7 @@
                     </div>
                     <div class="card-body">
                         @foreach(App\Genre::get() as $genre)
-                        <button type="button" class="genre-button btn btn-light">{{$genre->genre}}</button>
-                        @if($genre->genre=="all")
-                        @else
+                        @if($genre->genre!=="all")
                         <button type="button" class="genre-button btn btn-light">{{$genre->genre}}</button>
                         @endif
                         @endforeach

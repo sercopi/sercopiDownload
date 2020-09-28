@@ -30,6 +30,11 @@ class UserController extends Controller
         $this->middleware("user");
     }
 
+    public function testPOST($nombre, Request $request)
+    {
+        return dd($request);
+    }
+
     public function test($nombre)
     {
         /* $data = ["name" => "sergio", "body" => "prueba"];
@@ -49,7 +54,7 @@ class UserController extends Controller
         /*         return dd(Comment::where("user_id", Auth::user()->id)->where("id", 99)->first()->delete());*/
         //return dd(Manga::where("id", 600)->first()->manga_rating_history()->get());
 
-        $recentUpdates = DB::select(DB::raw("
+        /* $recentUpdates = DB::select(DB::raw("
         select * from (
             select 'manga' as resourceType,mangas.name,mangas.imageInfo,tabla.chapters_introduced,tabla.created_at
             from (
@@ -80,7 +85,8 @@ class UserController extends Controller
             ) 
         ) final
         "), ["userIDmanga" => Auth::user()->id, "userIDnovel" => Auth::user()->id, "mangaType" => "App\Manga", "novelType" => "App\novel"]);
-        return dd($recentUpdates);
+        return dd($recentUpdates); */
+        return view("user.layouts.ckeditor");
     }
 
     public function follow($nombre, $resourceType, $resourceName, Request $request)

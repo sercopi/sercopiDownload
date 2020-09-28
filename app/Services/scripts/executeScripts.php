@@ -22,7 +22,7 @@ switch ($argv[1]) {
                 $seriesInfo = $manga->getSeriesInfo($name, ["withImagen" => true]);
                 downloadManga($seriesInfo, $manga, $insertar);
                 break;
-            case ("all"):
+            case ("bygenre"):
                 $genres = $manga->getAllGenres();
                 foreach ($genres as $genre) {
                     echo "obteniendo todos los del Género: " . $genre . PHP_EOL;
@@ -39,6 +39,24 @@ switch ($argv[1]) {
                     echo "----------" . PHP_EOL;
                     echo "insetados todos los del genero: " . $genre . PHP_EOL;
                 }
+                break;
+            case ("all"):
+                echo "----------Obteniendo todos los mangas" . PHP_EOL;
+                $start = microtime(true);
+                $resultados = $manga->getAllMangasByGenre([], []);
+                echo "time: " . (microtime(true) - $start) . " seconds" . PHP_EOL;
+                echo "insertando los mangas obtenidos" . PHP_EOL;
+                foreach ($resultados as $numeroPagina => $pagina) {
+                    foreach ($pagina as $seriesInfo) {
+                        downloadManga($seriesInfo, $manga, $insertar);
+                    }
+                    echo "-----------" . PHP_EOL;
+                    echo "insertados los de pagina: " . $numeroPagina . PHP_EOL;
+                }
+                echo "----------" . PHP_EOL;
+                break;
+            case ("test"):
+                var_dump($manga->getAllMangasInPageByGenre("https://mangapark.net/search?genres&genres-exclude&page=1171"));
                 break;
         }
         break;
