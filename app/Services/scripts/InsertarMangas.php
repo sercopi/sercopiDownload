@@ -7,6 +7,7 @@ class InsertarManga extends Comunicacion
     public $stmtUpdateChapters;
     public $stmtInsertHistory;
     public $stmtLastChapters;
+    public $stmtInsertGenres;
     public function __construct($credenciales)
     {
         parent::__construct($credenciales);
@@ -15,6 +16,17 @@ class InsertarManga extends Comunicacion
         $this->stmtUpdateChapters = $this->oConn->prepare("UPDATE mangas set chapters=? where mangas.id=?");
         $this->stmtInsertHistory = $this->oConn->prepare("INSERT INTO mangas_update_history (manga_id,chapters_introduced) VALUES(?,?)");
         $this->stmtLastChapters = $this->oConn->prepare("SELECT chapters from mangas where mangas.name=?");
+        $this->stmtInsertGenres = $this->oConn->prepare("INSERT INTO genres (genre) VALUES(?)");
+    }
+    public function insertGenres($genres)
+    {
+        foreach ($genres as $genre) {
+            try {
+                $this->stmtInsertGenres->execute([$genre]);
+            } catch (PDOException $error) {
+                echo $error->getMessage() . PHP_EOL;
+            }
+        }
     }
     public function insertar($datos)
     {

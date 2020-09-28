@@ -300,9 +300,20 @@ select * from (
         return view("user.search", compact("resources", "seriesName"));
     }
 
-    public function orderByCallbackDefault($resources)
+    public function orderByCallback($resources, $option = false)
     {
-        return $resources->orderBy("name", "ASC");
+        switch ($option) {
+            case ("alphReverse"):
+                $resources = $resources->orderBy("name", "DESC");
+                break;
+            case ("rating"):
+                $resources = $resources->orderBy("score", "DESC");
+                break;
+            default:
+                $resources = $resources->orderBy("name", "ASC");
+                break;
+        }
+        return $resources;
     }
 
     public function searchResource($resourceName, $resourceBatchNumber, $batchPage, $type, $orderByCallBack = false, $additionalParams = false)
@@ -318,7 +329,7 @@ select * from (
         if ($additionalParams) {
             $resources = $this->wherePipeConstructor($additionalParams, $resources);
         }
-        $resources = $orderByCallBack ? $orderByCallBack($resources) : $this->orderByCallbackDefault($resources);
+        $resources =  $this->orderByCallback($resources, $orderByCallBack);
         $total = $resources->count();
         return ["resources" => $resources->skip(($batchPage - 1) * $resourceBatchNumber)->take($resourceBatchNumber)->get(), "total" => $total];
     }
@@ -430,14 +441,14 @@ select * from (
         }
         $selection = $request->input("selection");
         $currentPage = is_null($request->input("pageManga")) ? 1 : $request->input("pageManga");
-        $searchMangas = $this->searchResource($selection["name"], 28, $currentPage, "manga", false, $selection);
+        $searchMangas = $this->searchResource($selection["name"], 28, $currentPage, "manga", $request->input("order"), $selection);
         $resources = $searchMangas["resources"];
         $totalPages = ceil($searchMangas["total"] / 28);
         $resourceType = "manga";
         $baseURL = "http://172.17.0.2/sercopiDownload/public/user/" . Auth::user()->name . "/advancedSearch?pageManga=";
         $viewManga =  view("user.layouts.pagination", compact("resources", "currentPage", "resourceType", "totalPages", "baseURL"))->render();
-        $pageNovel = is_null($request->input("pageNovel")) ? 1 : $request->input("pageNovel");
-        $searchNovels = $this->searchResource($selection["name"], 28, $currentPage, "novel", false, $selection);
+        $currentPage = is_null($request->input("pageNovel")) ? 1 : $request->input("pageNovel");
+        $searchNovels = $this->searchResource($selection["name"], 28, $currentPage, "novel", $request->input("order"), $selection);
         $resources = $searchNovels["resources"];
         $totalPages = ceil($searchNovels["total"] / 28);
         $resourceType = "novel";

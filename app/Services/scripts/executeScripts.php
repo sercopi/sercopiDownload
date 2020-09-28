@@ -10,6 +10,13 @@ switch ($argv[1]) {
         $manga = new Mangapark("");
         $insertar = new InsertarManga(["DSN" => "mysql:host=localhost;dbname=laravelApp", "USER" => "sergio", "PASSWORD" => "sergiio666"]);
         switch ($argv[2]) {
+            case ("genres"):
+                echo "obtaining genres" . PHP_EOL;
+                $genres = $manga->getAllGenres();
+                $insertar->insertGenres($genres);
+                echo "genres inserted" . PHP_EOL;
+
+                break;
             case ("manga"):
                 $name = str_replace(" ", "-", $argv[3]);
                 $seriesInfo = $manga->getSeriesInfo($name, ["withImagen" => true]);
@@ -41,6 +48,13 @@ switch ($argv[1]) {
         $insert = new InsertarNovelas(["DSN" => "mysql:host=localhost;dbname=laravelApp", "USER" => "sergio", "PASSWORD" => "sergiio666"]);
 
         switch ($argv[2]) {
+            case ("genres"):
+                echo "obtaining genres" . PHP_EOL;
+                $genres = $lightNovelWorld->getAllGenres();
+                var_dump($genres);
+                $insert->insertGenres($genres);
+                echo "genres inserted" . PHP_EOL;
+                break;
             case ("chapter"):
                 var_dump($lightNovelWorld->getChapter($argv[3]));
                 break;

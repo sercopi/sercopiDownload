@@ -32,8 +32,13 @@
                         </h5>
                     </div>
                     <div class="card-body">
-                        <button type="button" class="genre-button btn btn-light">Action</button>
-                        <button type="button" class="genre-button btn btn-light">Adventure</button>
+                        @foreach(App\Genre::get() as $genre)
+                        <button type="button" class="genre-button btn btn-light">{{$genre->genre}}</button>
+                        @if($genre->genre=="all")
+                        @else
+                        <button type="button" class="genre-button btn btn-light">{{$genre->genre}}</button>
+                        @endif
+                        @endforeach
                     </div>
 
                 </div>
@@ -62,7 +67,7 @@
                         <label for="status">Status</label>
 
                         <hr>
-                        <input type="number" name="selection[score][included][]" step="0.1" min=0 max=10>
+                        <input type="number" name="selection[score][included][]" step="1" min=0 max=5>
                         <label for="score">Score</label>
                     </div>
                 </div>
@@ -70,9 +75,15 @@
         </div>
         <div class="mt-4 mb-2 row justify-content-center">
             <div class="col-8 text-center">
+                @include("user.layouts.orderByMenu")
+            </div>
+        </div>
+        <div class="mt-4 mb-2 row justify-content-center">
+            <div class="col-8 text-center">
                 <input type="submit" class="btn btn-primary" value="SEARCH">
             </div>
         </div>
+
     </form>
     <div class="row">
         <div class="col" id="searchContent">
@@ -104,9 +115,12 @@
                 event.target.appendChild(input);
 
             });
+            const form = new FormData(document.getElementById("advancedSearchForm"));
+            const order =Array.from(document.getElementsByClassName("order")).filter((element)=>element.checked)[0].value;
+            form.append("order",order)
             let response = await fetch(event.target.href?event.target.href:window.location.href, {
                 method: 'POST',
-                body: new FormData(document.getElementById("advancedSearchForm"))
+                body: form,
             }).then((response)=>response.json()).then( (json)=>{
                 document.getElementById("searchContent").innerHTML=json;
                 Array.from(document.getElementsByClassName("page-link")).forEach((element)=>element.addEventListener("click",(event)=>{addSubmit(event)}));

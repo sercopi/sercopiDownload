@@ -1,10 +1,23 @@
 <?php
 class InsertarNovelas extends Comunicacion
 {
+    public $stmtInsertGenres;
     public function __construct($credenciales)
     {
         parent::__construct($credenciales);
+        $this->stmtInsertGenres = $this->oConn->prepare("INSERT INTO genres (genre) VALUES(?)");
     }
+    public function insertGenres($genres)
+    {
+        foreach ($genres as $genre) {
+            try {
+                $this->stmtInsertGenres->execute([$genre]);
+            } catch (PDOException $error) {
+                echo $error->getMessage() . PHP_EOL;
+            }
+        }
+    }
+
     public function insertNovel($novel)
     {
         $sqlInsertarPagina = "INSERT INTO `novels` (`name`,`author`,`imageInfo`,`alternativeTitle`,`status`,`genre`,`synopsis`) VALUES (?,?,?,?,?,?,?)";
