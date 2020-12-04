@@ -77,13 +77,16 @@ class Lightnovelworld extends Scrapper
     }
     public function getChapter($url)
     {
-        $html = $this->wget($url);
-        $doc = new \DOMDocument("1.0", "utf-8");
-        @$doc->loadHTML($html);
-        $xpath = new \DOMXPath($doc);
-        $chapter = [];
-        $chapterContent = "";
-        $textGlobalContainer = $xpath->query("/html/body/main/article/section[1]/div[2]")->item(0);
+        do {
+            $html = $this->wget($url);
+            $doc = new \DOMDocument("1.0", "utf-8");
+            @$doc->loadHTML($html);
+            $xpath = new \DOMXPath($doc);
+            $chapter = [];
+            $chapterContent = "";
+            $textGlobalContainer = $xpath->query("/html/body/main/article/section[1]/div[2]")->item(0);
+            sleep(2);
+        } while (is_null($textGlobalContainer));
         if (!is_null($textGlobalContainer)) {
             $textGlobalDivs = $xpath->query("./div", $textGlobalContainer);
             foreach ($textGlobalDivs as $div) {
@@ -94,8 +97,8 @@ class Lightnovelworld extends Scrapper
                 $textGlobalContainer->removeChild($span);
             }
             $chapterContent =  $textGlobalContainer->C14N();
-            $patrones = ['<div class="chapter-content">', '</div>', '<br></br>', "<p>", '</p>'];
-            $sustituciones = ["", "", "\n\n", "", "\n\n"];
+            $patrones = ['<div class="chapter-content">', '</div>', '<br></br>', "<p>", '</p>', '<span>', '</span>', '<li>'];
+            $sustituciones = ["", "", "\n\n", "", "\n\n", "", "", ""];
             $chapterContent =  str_replace($patrones, $sustituciones, $chapterContent);
         }
         $chapter["content"] = $chapterContent;
@@ -117,6 +120,7 @@ class Lightnovelworld extends Scrapper
                 echo "----Starting Page: " . $page . PHP_EOL;
                 $html = $this->wget($this->baseURL2 . "/browse/all/popular/all/" . $page);
                 $doc = new \DOMDocument("1.0", "utf-8");
+                sleep(10);
                 @$doc->loadHTML($html);
                 $xpath = new \DOMXPath($doc);
                 $pageNovels = $xpath->query("/html/body/main/article/section/ul/li/a");
@@ -134,6 +138,7 @@ class Lightnovelworld extends Scrapper
                 echo "----Starting Page: " . $i . PHP_EOL;
                 $html = $this->wget($this->baseURL2 . "/browse/all/popular/all/" . $i);
                 $doc = new \DOMDocument("1.0", "utf-8");
+                sleep(10);
                 @$doc->loadHTML($html);
                 $xpath = new \DOMXPath($doc);
                 $pageNovels = $xpath->query("/html/body/main/article/section/ul/li/a");

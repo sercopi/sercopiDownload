@@ -446,15 +446,16 @@ select * from (
             return view("user.advancedSearch");
         }
         $selection = $request->input("selection");
+        $selectionName = str_replace(" ", "-", $selection["name"]);
         $currentPage = is_null($request->input("pageManga")) ? 1 : $request->input("pageManga");
-        $searchMangas = $this->searchResource($selection["name"], 28, $currentPage, "manga", $request->input("order"), $selection);
+        $searchMangas = $this->searchResource($selectionName, 28, $currentPage, "manga", $request->input("order"), $selection);
         $resources = $searchMangas["resources"];
         $totalPages = ceil($searchMangas["total"] / 28);
         $resourceType = "manga";
         $baseURL = "http://172.17.0.2/sercopiDownload/public/user/" . Auth::user()->name . "/advancedSearch?pageManga=";
         $viewManga =  view("user.layouts.pagination", compact("resources", "currentPage", "resourceType", "totalPages", "baseURL"))->render();
         $currentPage = is_null($request->input("pageNovel")) ? 1 : $request->input("pageNovel");
-        $searchNovels = $this->searchResource($selection["name"], 28, $currentPage, "novel", $request->input("order"), $selection);
+        $searchNovels = $this->searchResource($selectionName, 28, $currentPage, "novel", $request->input("order"), $selection);
         $resources = $searchNovels["resources"];
         $totalPages = ceil($searchNovels["total"] / 28);
         $resourceType = "novel";

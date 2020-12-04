@@ -6,6 +6,7 @@ class InsertarNovelas extends Comunicacion
     {
         parent::__construct($credenciales);
         $this->stmtInsertGenres = $this->oConn->prepare("INSERT INTO genres (genre) VALUES(?)");
+        $this->stmtSeriesInserted = $this->oConn->prepare("SELECT novels.*,count(novels.id) as chapters from novels left join novel_chapters on novels.id=novel_chapters.novel_id where name=? group by novels.name");
     }
     public function insertGenres($genres)
     {
@@ -15,6 +16,19 @@ class InsertarNovelas extends Comunicacion
             } catch (PDOException $error) {
                 echo $error->getMessage() . PHP_EOL;
             }
+        }
+    }
+    public function getSeriesInserted($name)
+    {
+        try {
+            $this->stmtSeriesInserted->execute([$name]);
+            $results = $this->stmtSeriesInserted->fetchAll();
+            if (!$results) {
+                return null;
+            }
+            return $results[0];
+        } catch (PDOException $error) {
+            echo $error->getMessage();
         }
     }
 
@@ -33,7 +47,7 @@ class InsertarNovelas extends Comunicacion
         $stmtInsertarPagina = $this->oConn->prepare($sqlInsertarPagina);
         try {
             $stmtInsertarPagina->execute($dataToInsert);
-            return $id = $this->oConn->lastInsertId();
+            return $this->oConn->lastInsertId();
         } catch (PDOException $e) {
             echo $e->getMessage();
             return false;
@@ -49,7 +63,7 @@ class InsertarNovelas extends Comunicacion
             $sqlInsertarChapter .= "(?,?,?,?),";
             $dataToInsert[] = $lastNumberInserted + $number;
             $chaptersInserted[] = $lastNumberInserted + $number;
-            $dataToInsert[] = $chapter["title"];
+            $dataToInsert[] = isset($chapter["title"]) ? $chapter["title"] : ("no title" . ($lastNumberInserted + $number + 1));
             $dataToInsert[] = $chapter["content"];
             $dataToInsert[] = $id;
         }
@@ -82,7 +96,7 @@ class InsertarNovelas extends Comunicacion
             if (!$chapters) {
                 return 0;
             }
-            return $stmtGetLastChapter->fetchAll()[0]["capitulos"];
+            return $chapters[0]["capitulos"];
         } catch (PDOException $error) {
             echo $error->getMessage();
         }

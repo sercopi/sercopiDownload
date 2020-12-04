@@ -78,7 +78,8 @@ switch ($argv[1]) {
                 break;
             case ("novel"):
                 //arg3 es la url
-                downloadNovel($argv[3], $lightNovelWorld, $insert);
+                $novelInfo = $lightNovelWorld->getSeriesInfo(false, $argv[3]);
+                downloadNovel($novelInfo, $lightNovelWorld, $insert);
                 break;
             case ("all"):
                 echo "getting all novels from pages" . PHP_EOL;
@@ -89,7 +90,8 @@ switch ($argv[1]) {
                         echo "Starting inserts from page: " . $number . PHP_EOL;
                         foreach ($page as $title => $novelURL) {
                             echo "starting with: " . $title . PHP_EOL;
-                            downloadNovel($novelURL, $lightNovelWorld, $insert);
+                            $novelInfo = $lightNovelWorld->getSeriesInfo(false, $novelURL);
+                            downloadNovel($novelInfo, $lightNovelWorld, $insert);
                         }
                     }
                 } else {
@@ -99,7 +101,8 @@ switch ($argv[1]) {
                         echo "Starting inserts from page: " . $number . PHP_EOL;
                         foreach ($page as $title => $novelURL) {
                             echo "starting with: " . $title . PHP_EOL;
-                            downloadNovel($novelURL, $lightNovelWorld, $insert);
+                            $novelInfo = $lightNovelWorld->getSeriesInfo(false, $novelURL);
+                            downloadNovel($novelInfo, $lightNovelWorld, $insert);
                         }
                     }
                 }
@@ -113,37 +116,57 @@ switch ($argv[1]) {
         echo "Wrong arguments" . PHP_EOL;
         break;
 }
-function downloadNovel($url, $lightNovelWorld, $insert)
+function downloadNovel($novelInfo, $lightNovelWorld, $insert)
 {
-    $novelInfo = $lightNovelWorld->getSeriesInfo(false, $url);
-    var_dump($novelInfo);
-    echo "Info obtained" . PHP_EOL;
-    isset($novelInfo["lastChapter"]) ? $novelInfo["lastChapter"] : $novelInfo["lastChapter"] = "unknown";
-    echo "last chapter: " . $novelInfo["lastChapter"] . PHP_EOL;
-    $lastInserted = $insert->getLastChapter($novelInfo["name"]);
-    echo "last inserted: " . $lastInserted . PHP_EOL;
-    if ($novelInfo["lastChapter"] == "unknown" || $lastInserted < $novelInfo["lastChapter"]) {
-        echo "getting chapters..." . PHP_EOL;
-        $novelWithChapters = $lightNovelWorld->getAllChapters($novelInfo, $lastInserted + 1, false);
-        echo "------capitulos: " . count($novelWithChapters["chapters"]) . PHP_EOL;
-        //si ya hay capitulos, no insertamos la novela
-        $novelID = false;
+    $seriesInserted = $insert->getSeriesInserted($novelInfo["name"]);
 
-        if (!$lastInserted) {
-            echo "Inserting Novel" . PHP_EOL;
-            $novelID = $insert->insertNovel($novelWithChapters);
+    if (!is_null($seriesInserted)) {
+        echo "-----serie ya insertada" . PHP_EOL;
+        //la serie ya estaba insertada, se comprueban los capitulos
+        //si hay informacion sobre el ultimo capitulo, se usa.
+        //si el ultimo capitulo es mas grande que el ultimo introducido, 
+        //lo que va a pasar tambien si no hay capitulos,
+        //puesto que el count de ningun capitulo es 0 (comprobar)
+        //hay cambios que se tienen que descargar
+        if (isset($novelInfo["lastChapter"])) {
+            echo "hay info del ultimo capitulo" . PHP_EOL;
+            echo "last chapter: " . $novelInfo["lastChapter"] . " last inserted: " . $seriesInserted["chapters"];
+            if ($novelInfo["lastChapter"] > $seriesInserted["chapters"]) {
+                //obtain all the chapters from the last inserted +1 till the last one possible
+                $novelWithChapters = $lightNovelWorld->getAllChapters($novelInfo, $seriesInserted["chapters"], false);
+                echo "Inserting Chapters" . PHP_EOL;
+                //insert all the new chapters and update the history
+                $insert->insertChapters($novelWithChapters["chapters"], $seriesInserted["id"], $seriesInserted["chapters"]);
+                echo "capitulos insertados y registro actualizado." . PHP_EOL;
+                echo "-----------------" . PHP_EOL;
+            } else {
+                echo "Novel already up to Date" . PHP_EOL;
+            }
+        } else {
+            echo "No hay info del ultimo capitulo" . PHP_EOL;
+            //si no hay informacion del ultimo capitulo, 
+            //se descargan todos los capitulos desde el ultimo insertado
+            $novelWithChapters = $lightNovelWorld->getAllChapters($novelInfo, $seriesInserted["chapters"] + 1, false);
+            echo "last chapter: " . count($novelWithChapters["chapters"]) . " last inserted: " . $seriesInserted["chapters"];
+            if (count($novelWithChapters["chapters"]) > $seriesInserted["chapters"]) {
+                echo "Inserting Chapters" . PHP_EOL;
+                //insert all the new chapters and update the history
+                $insert->insertChapters($novelWithChapters["chapters"], $seriesInserted["id"], $seriesInserted["chapters"]);
+                echo "capitulos insertados y registro actualizado." . PHP_EOL;
+                echo "-----------------" . PHP_EOL;
+            } else {
+                echo "Novel already up to Date" . PHP_EOL;
+            }
         }
-        if (!$novelID) {
-            echo "Novel already Inserted" . PHP_EOL;
-            $novelID = $insert->getId($novelInfo["name"]);
-        }
+    } else {
+        echo "Inserting Novel" . PHP_EOL;
+        $novelID = $insert->insertNovel($novelInfo);
+        echo "getting all chapters..." . PHP_EOL;
+        $novelWithChapters = $lightNovelWorld->getAllChapters($novelInfo, false, false);
         echo "Inserting Chapters" . PHP_EOL;
-
-        $insert->insertChapters($novelWithChapters["chapters"], $novelID, $lastInserted);
+        $insert->insertChapters($novelWithChapters["chapters"], $novelID);
         echo "capitulos insertados y registro actualizado." . PHP_EOL;
         echo "-----------------" . PHP_EOL;
-    } else {
-        echo "Novel already up to Date" . PHP_EOL;
     }
 }
 function downloadManga($seriesInfo, $manga, $insertar)

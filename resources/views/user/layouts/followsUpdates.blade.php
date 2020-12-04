@@ -11,7 +11,7 @@
             <img class="card-img-top" height="200px" src="{{"data:image/jpeg;base64, ".$resource->imageInfo}}"
                 alt=" Card image">
             <div class="card-header " id={{"heading".$resource->name.$resource->resourceType}}>
-                <a hred>{{$resource->name}}</a>
+                <a hred>{{str_replace("-"," ",$resource->name)}}</a>
                 <footer class="blockquote-footer"><cite title="time">{{$resource->created_at}}</cite>
                 </footer>
                 <a href="{{URL::to("/user/".Auth::user()->name."/".$resource->resourceType."/".$resource->name)}}"

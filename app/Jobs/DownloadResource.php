@@ -51,6 +51,7 @@ class DownloadResource implements ShouldQueue
                 $downloadManager->downloadVersions($this->data["selection"], $this->data["userID"], $this->data["resourceName"]);
                 File::deleteDirectory(public_path() . "/users/" . $this->data["userID"] . "/" . $this->data["resourceName"]);
                 $pathToDownload = "http://172.17.0.2/sercopiDownload/public/users/" . $this->data["userID"] . "/" . $this->data["resourceName"] . "_" . date('m-d-Y_hia') . ".zip";
+
                 break;
             case ("novel"):
                 $downloadManager = new Lightnovelworld();

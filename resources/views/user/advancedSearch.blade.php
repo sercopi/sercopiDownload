@@ -66,7 +66,7 @@
 
                         <hr>
                         <input type="number" name="selection[score][included][]" step="1" min=0 max=5>
-                        <label for="score">Score</label>
+                        <label for="score">Rating</label>
                     </div>
                 </div>
             </div>
