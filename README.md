@@ -10,8 +10,8 @@ Las especificaciones técnicas: Herramientas, estructuración, Base de Datos, fu
 <li><a href="#scrap">Uso de los Scripts de Scrapping</a></li>
 <li><a href="#use">Uso de la aplicación</a>
 <ul>
-<li><a href="#login">login</a></li>
-<li><a href="#index">index</a></li>
+<li><a href="#login">Login</a></li>
+<li><a href="#index">Index</a></li>
 <li><a href="#busquedaSencilla">Búsqueda Sencilla</a></li>
 <li><a href="#recurso">Vista de Recurso</a></li>
 <li><a href="#descarga">Descarga</a></li>
