@@ -21,13 +21,12 @@
         const container = document.createElement("div");
         document.getElementById("follows-container").innerHTML="";
             container.innerHTML=json;
-            console.log(container);
+            (container);
             const scriptContainer = document.createElement("div");
             Array.from(container.getElementsByTagName("script")).forEach((script)=>{
                 const newScript = document.createElement("script");
                 newScript.innerHTML=script.innerHTML;
                 scriptContainer.appendChild(newScript);
-                console.log("script añadido");
             })
             container.appendChild(scriptContainer);
             document.getElementById("follows-container").appendChild(container);

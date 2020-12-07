@@ -24,7 +24,7 @@
                                 </h4>
                             </a>
                             <h5>
-                                Last Updated: {{$resource->updated_at}}
+                                Added: {{$resource->updated_at}}
                             </h5>
                             @include("user.layouts.starRating",["resource"=>$resourceType=="manga"?App\Manga::where("name",$resource->name)->first():App\Novel::where("name",$resource->name)->first(),"resourceType"=>$resourceType])
                         </div>

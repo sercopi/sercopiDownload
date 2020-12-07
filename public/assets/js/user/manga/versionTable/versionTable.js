@@ -56,5 +56,4 @@ $(document).ready(function() {
         });
     });
 });
-console.log("version table importado");
 //https://www.gyrocode.com/articles/jquery-datatables-how-to-add-a-checkbox-column/

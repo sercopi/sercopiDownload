@@ -90,7 +90,7 @@
                                                 @foreach($result->download as $number)
                                                 <li class="list-group-item">
                                                     <a
-                                                        href="{{'https://www.lightnovelworld.com/novel/warlock-of-the-magus-world/chapter-'.($number+1)}}">{{"chapter: ".($number+1)}}</a>
+                                                        href="{{'https://www.lightnovelworld.com'}}">{{"chapter: ".($number+1)}}</a>
                                                 </li>
                                                 @endforeach
                                             </ul>

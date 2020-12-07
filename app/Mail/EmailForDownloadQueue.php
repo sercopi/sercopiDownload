@@ -31,6 +31,7 @@ class EmailForDownloadQueue extends Mailable
      */
     public function build()
     {
-        return $this->from("vpssergiocorderopino@gmail.com", "sergio")->subject("descarga finalizada para: " . $this->resourceName)->view("mails.mail")->with(["path" => $this->path]);
+        //sends the image, using a sender and a reciever
+        return $this->view("mails.mail")->with(["path" => $this->path]);
     }
 }

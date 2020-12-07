@@ -126,16 +126,7 @@
                     fetch(link)
             .then(response => response.json())
             .then(json => {
-                /* const observer = new MutationObserver(domModified);
-            
-                // define what element should be observed by the observer
-                // and what types of mutations trigger the callback
-                observer.observe(document.getElementsByClassName("comments-container")[0].parentNode, {
-                    subtree: true,
-                    attributes: true
-                    //...
-                });*/
-                
+              
               domModified(json);
               window.scrollTo(0, document.documentElement.scrollTop || document.body.scrollTop)
             })
@@ -146,23 +137,14 @@
             Array.from(document.getElementsByClassName("delete-button")).forEach((element)=>{
                 const form = document.getElementById("delete-"+element.dataset.id);
                 element.addEventListener("click",(event)=>{
-                    console.log(form);
-                    console.log(element.dataset.id);       
+                           
                     fetch(form.action, {
                     method: 'POST',
                     body: new FormData(form)
                     })
                     .then((response)=>response.json())
                     .then(json => {
-                /* const observer = new MutationObserver(domModified);
-            
-                // define what element should be observed by the observer
-                // and what types of mutations trigger the callback
-                observer.observe(document.getElementsByClassName("comments-container")[0].parentNode, {
-                    subtree: true,
-                    attributes: true
-                    //...
-                });*/
+                
 
                     domModified(json);
                     })
@@ -196,15 +178,7 @@
                     fetch(link)
             .then(response => response.json())
             .then(json => {
-                /* const observer = new MutationObserver(domModified);
-            
-                // define what element should be observed by the observer
-                // and what types of mutations trigger the callback
-                observer.observe(document.getElementsByClassName("comments-container")[0].parentNode, {
-                    subtree: true,
-                    attributes: true
-                    //...
-                });*/
+               
 
               domModified(json);
               window.scrollTo(0, document.documentElement.scrollTop || document.body.scrollTop)
@@ -220,15 +194,7 @@
             fetch({!! json_encode(URL::to("/user/".Auth::user()->name."/comment/".$resourceType."/".$resource->name."/show"))!!})
             .then(response => response.json())
             .then(json => {
-            /*             const observer = new MutationObserver(domModified);
-            
-                // define what element should be observed by the observer
-                // and what types of mutations trigger the callback
-                observer.observe(document.getElementsByClassName("comments-container")[0].parentNode, {
-                    subtree: true,
-                    attributes: true
-                    //...
-                });*/
+           
 
               domModified(json);
             })

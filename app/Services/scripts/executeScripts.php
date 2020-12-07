@@ -5,10 +5,12 @@ require_once("Comunicacion.php");
 require_once("InsertarMangas.php");
 require_once("Lightnovelworld.php");
 require_once("InsertarNovelas.php");
+$variables = parse_ini_file("./.env");
+
 switch ($argv[1]) {
     case ("manga"):
         $manga = new Mangapark("");
-        $insertar = new InsertarManga(["DSN" => "mysql:host=localhost;dbname=laravelApp", "USER" => "sergio", "PASSWORD" => "sergiio666"]);
+        $insertar = new InsertarManga(["DSN" => "mysql:host=" . $variables["HOST"] . ";dbname=" . $variables["DBNAME"], "USER" => $variables["USER"], "PASSWORD" => $variables["PASSWORD"]]);
         switch ($argv[2]) {
             case ("genres"):
                 echo "obtaining genres" . PHP_EOL;

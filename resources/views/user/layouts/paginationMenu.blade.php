@@ -1,12 +1,12 @@
 @if ($pages>=1)
-<label for="pageSelect">Go To:</label>
+<!--<label for="pageSelect">Go To:</label>
 <select name="pageSelect" onchange="{{'window.location.href= this.value'}}">
     @foreach(range(1,$pages) as $page)
     <option value="{{$baseURL.$page}}" {{$currentPage==$page?'selected':''}}>
         {{$page}}
     </option>
     @endforeach
-</select>
+</select>-->
 <nav class="mt-3" aria-label="Page navigation">
     <ul class="pagination justify-content-center">
         <li class="{{(($currentPage==1)?'page-item disabled':'page-item')}}">

@@ -1,6 +1,5 @@
 <div class="m-3 h-100" id="display">{!!(isset($userComment)?$userComment->comment:"")!!}</div>
 <script>
-    console.log("configuring editor");
     ClassicEditor.defaultConfig = {
     height:'250px',
       toolbar: {

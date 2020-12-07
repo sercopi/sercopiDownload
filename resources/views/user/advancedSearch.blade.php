@@ -122,7 +122,6 @@
             }).then((response)=>response.json()).then( (json)=>{
                 document.getElementById("searchContent").innerHTML=json;
                 Array.from(document.getElementsByClassName("page-link")).forEach((element)=>element.addEventListener("click",(event)=>{addSubmit(event)}));
-                console.log("default prevenido en links");
                 })};
         const genres = {included:[],excluded:[]};
 
@@ -133,18 +132,15 @@
                 genres.included=genres.included.filter((value)=>value!==button.textContent);
                 genres.excluded.push(button.textContent);
                 button.className="genre-button btn btn-danger";
-                console.log(genres);
                 return true;
             }
             if (genres.excluded.includes(button.textContent)){
                 genres.excluded=genres.excluded.filter((value)=>value!==button.textContent);
                 button.className="genre-button btn btn-light";
-                console.log(genres);
                 return true;
             }
             genres.included.push(button.textContent);
             button.className="genre-button btn btn-success";
-            console.log(genres);
             return true;
         }
         document.querySelector("#advancedSearchForm").addEventListener("submit",(event)=>addSubmit(event));
