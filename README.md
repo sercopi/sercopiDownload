@@ -26,6 +26,7 @@ Las especificaciones técnicas: Herramientas, estructuración, Base de Datos, fu
 </ul>
 
 <div id="docker"></div>
+
 ### Creación del Docker
 
 Una vez abastecida la BD podemos comenzar nuestra aplicación.
