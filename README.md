@@ -1,6 +1,6 @@
 # sercopiDownload
 
-Las especificaciones técnicas: Herramientas, instalación, funcionamiento interno y enlaces de interés o referencias, se encuentran en un archivo de documentación añadido con el proyecto. Ésta, en cambio, será una guía de uso práctico de los componentes.
+Las especificaciones técnicas: Herramientas, estructuración, Base de Datos, funcionamiento interno y enlaces de interés o referencias, se encuentran en un archivo de documentación añadido con el proyecto. Ésta, en cambio, será una guía de uso práctico e instalación del mismo.
 
 ### Table of contents
 
@@ -107,8 +107,11 @@ para comenzar a scrappear y añadir a la BD. Los erroes individuales se muestran
 El script compara el contenido de la BD y añade sólo si hay alguna diferencia, con lo que al estar vacía, tardará varias horas. El resultado:
 
 Obtención de la info de todos los mangas...
+<br>
 ![obtener info manga](./guideImages/scrappingMangas.png)
+
 Obtención de los capítulos de cada manga, si hay capítulos nuevos ó descarga de un manga completo si es totalmente nuevo...
+<br>
 ![obtención capítulos manga](./guideImages/scrappingMangas2.png)
 
 Las novelas tardan bastante más debido a una protección recientemente añadida a la página, y a menudo no consiguen descargarse enteras antes de que se corte la conexión por completo durante un tiempo. (se están explorando alternativas)
