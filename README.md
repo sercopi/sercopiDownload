@@ -62,6 +62,7 @@ Al terminar, tenemos que crear el archivo .env tal y como indica el archivo .env
 
 y completarlo con los datos de nuestra base de datos, así como los datos de mailing que vamos a usar para enviar los emails, en nuestro caso:
 
+<pre>
 MAIL_MAILER=smtp
 MAIL_HOST=smtp.googlemail.com
 MAIL_PORT=465
@@ -70,6 +71,7 @@ MAIL_PASSWORD=su contraseña
 MAIL_ENCRYPTION=ssl
 MAIL_FROM_ADDRESS=null
 MAIL_FROM_NAME="\${APP_NAME}"
+</pre>
 
 _Nota: No olvidar habilitar el uso de aplicaciones de terceros en la cuenta._
 
