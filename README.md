@@ -146,7 +146,7 @@ Nos encontramos con las vistas de _Login/Registro_:
 ![login](./guideImages/login.png)
 ![register](./guideImages/register.png)
 
-Creamos un usuario con un correo válido al que tengamos acceso real. En nuestro caso, mi correo personal: sergiiosercopi@gmial.com de nombre: admin (al que le hemos dado el rol de admin desde la BD)
+Creamos un usuario con un correo válido al que tengamos acceso real. En nuestro caso, mi correo personal: sergiiosercopi@gmail.com de nombre: admin (al que le hemos dado el rol de admin desde la BD)
 
 <div id="index"></div>
 
