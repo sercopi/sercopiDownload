@@ -134,7 +134,9 @@ y el feedback es prácticamente el mismo.
 ### Uso de la aplicación
 
 <div id="login"></div>
+
 #### Acceder al login y registrarse/logearse
+
 Para entrar, lanzamos: `ifconfig` En la terminal de docker para obtener nuestra ip local, y nos dirigimos al navegador a:
 
 _http://(la ip obtenida)/sercopiDownload/public_
