@@ -22,6 +22,8 @@ Las especificaciones técnicas: Herramientas, estructuración, Base de Datos, fu
 </ul>
 </li>
 <li><a href="#toimplement">To Implement</a></li>
+<li><a href="#reflexiones">Reflexiones</a></li>
+<li><a href="#otrosProyectos">Otros Proyectos</a></li>
 
 </ul>
 
