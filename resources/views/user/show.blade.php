@@ -35,6 +35,10 @@
     </div>
     <script>
         let ckeditor;
+        /*
+            Everytime the comments section is updated, the domModified function is run (also when the page is loaded too)
+            to add SPA functionality to the comments section links
+        */
         const domModified = (json) => {
             document.getElementsByClassName("comments-container")[0].innerHTML="";
             

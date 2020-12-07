@@ -11,6 +11,11 @@
     </div>
 </div>
 <script>
+    /*
+        As we are bringing HTML rendered code from the server
+        that comes with custom Javascript code, we cant inject it in hot in the DOM, as it is protected agiainst it
+        so we have to iterate over the new added containers to search for the script tags containing the code and manually add them ourselves
+    */
     window.onload = ()=>{
         
         fetch ({!!json_encode(URL::to("/user/".Auth::user()->name."/followFeed"))!!}).then((json)=>json.json()).then((json)=>{

@@ -24,6 +24,8 @@ class Comment extends Model
     {
         return $this->morphMany("App\Comment", "commentable");
     }
+    //Obtains the total likes count of a resource, 
+    //if there was none, the sum() returns null, so it instead returns 0
     public function getLikes()
     {
         $total = $this->likes()->select(DB::raw('SUM(likes.like) as total'))->first()->total;

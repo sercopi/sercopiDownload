@@ -29,6 +29,9 @@ class Manga extends Model
     {
         return $this->hasMany("App\Mangas_rating_history");
     }
+    //function to run everytime a rating is issued by an user,
+    // it calculates a mean for the rating of a resource
+    //and updates it, returning said new rating to pass to the client
     public function updateRating()
     {
         $rating = $this->ratings()->select(DB::raw("AVG(rating) as rating"))->first()->rating;

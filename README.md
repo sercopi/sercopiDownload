@@ -256,7 +256,7 @@ Volviendo a la vista del recurso, encontramos la sección de los comentarios:
 
 ![](./guideImages/commentsSection.png)
 
-Ésta sección también está hecha tratando de imitar el comportamiento de una PWA. De manera que con Javascript, cada petición o comentario es procesado al margen de la vista principal y se obtiene una vista renderizada de la sección, con el cambio (comentario añadido, borrado, etc...) que se reinserta tras borrar la anterior.
+Ésta sección también está hecha tratando de imitar el comportamiento de una SPA. De manera que con Javascript, cada petición o comentario es procesado al margen de la vista principal y se obtiene una vista renderizada de la sección, con el cambio (comentario añadido, borrado, etc...) que se reinserta tras borrar la anterior.
 
 De esta manera el usuario puede:
 
@@ -292,7 +292,7 @@ En el caso de los géneros, se puede seleccionar el género una vez para pedir q
 
 ![](./guideImages/advancedSearchIncludedExcluded.png)
 
-Los resultados, de nuevo, se insertan por una petición que renderiza una vista parcial, que luego es introducida, para no cambiar la vista principal e imitar el comportamiento de una PWA.
+Los resultados, de nuevo, se insertan por una petición que renderiza una vista parcial, que luego es introducida, para no cambiar la vista principal e imitar el comportamiento de una SPA.
 
 ![](./guideImages/advancedsearchresult.png)
 

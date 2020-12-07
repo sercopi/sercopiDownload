@@ -18,13 +18,6 @@
                     @if(isset($userComment))
                     <p>Modify: {{$userComment->id}}</p>
                     @endif
-                    {{-- {!!Form::open(["id"=>(isset($userComment)?"update-form":(isset($responseComment)?"response-form":"save-form")),"class"=>"form-comment","method"=>"post","url"=>URL::to("/user/".Auth::user()->name."/comment/".$resourceType."/".$resourceName.(isset($userComment)?"/update/".$userComment->id:(isset($responseComment)?"/saveResponse/".$responseComment->id:"/save")))])!!}
-                    {!!Form::label("comment","Texto:")!!}
-                    {!!Form::textarea('comment',(isset($userComment)?$userComment->comment:(isset($responseComment)?'':'')),
-                    ["rows"=>4,"cols"=>30])
-                    !!}
-                    {!!Form::submit("Enviar",["class"=>"btn btn-primary"])!!}
-                    {!!Form::close()!!} --}}
                     <form method="post"
                         id={{(isset($userComment)?"update-form":(isset($responseComment)?"response-form":"save-form"))}}
                         class="form-comment h-100"
