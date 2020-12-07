@@ -353,3 +353,7 @@ La documentación para crear los archivos Migrations es un poco excasa, y ejempl
 ### Otros Proyectos
 
 He desarrollado en todo este tiempo proyectos en vista a mejorar lo anteriormente mencionado en el apartado To Implement, scripts de python para web Scrapping, proyectos serverless hosteados en heroku y github, usando VUE (Vuetify, Vuex, VueRouter, etc...) y firebase y he recreado algunas vistas usando una implementación de graphQL en VUE (Apollo) y Laravel (lighthouse).
+
+-Proyecto usando Vue-Vuetify y firebase (autentificación y base de datos)[<a href="https://github.com/sercopi/vuex-vuetify-calendar">github</a>][<a href="https://sercopi-agenda.herokuapp.com/#/">heroku</a>]
+
+-Proyecto graphQL usando Laravel(lighthouse) como servidor graphQL y Vue(Apollo) como cliente graphQL[<a href="https://github.com/sercopi/BackendSercopiQL">github(backend)</a>][<a href="https://github.com/sercopi/frontendsercopiql">github(frontend)</a>]
