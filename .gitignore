@@ -13,3 +13,4 @@ yarn-error.log
 /public/users
 /public/images
 .vscode
+supervisor*
